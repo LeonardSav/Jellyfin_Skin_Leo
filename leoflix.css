@@ -1,7 +1,7 @@
 /* ==========================================================
-   LeoFlix : thème Jellyfin maison (v0.34)
+   LeoFlix : thème Jellyfin maison (v0.35)
    Base : thème sombre d'origine de Jellyfin 12.4, sans import externe
-   Validé : accueil (boutons, barre du haut, vignettes, bandeau Editor's Choice)
+   Validé : accueil, connexion, bibliothèques, fiche film, fiche série, page saison, lecteur
    ========================================================== */
 
 /* Police DM Sans (OFL 1.1), version figée, servie par jsDelivr comme ce thème */
@@ -12,8 +12,8 @@
 
 /* ---------- Variables ---------- */
 :root {
-  --lf-accent: 70, 130, 180;        /* bleu acier : accent principal */
-  --lf-accent-alt: 46, 134, 210;    /* acier vif : halo vignettes, barre de progression */
+  --lf-accent: 196, 201, 210;       /* argent : accent principal (bleu acier : 70, 130, 180) */
+  --lf-accent-alt: 176, 184, 196;   /* argent vif : halo vignettes, barres (acier vif : 46, 134, 210) */
   --lf-bg: 9, 9, 11;
   --lf-glass: rgba(20, 20, 24, 0.55);
   --lf-glass-border: rgba(255, 255, 255, 0.08);
@@ -714,3 +714,288 @@ body:has(#itemDetailPage:not(.hide)) .backgroundContainer.withBackdrop {
 .actionSheet .actionSheetMenuItem:hover { background: rgba(var(--lf-accent), .16) !important; color: #fff; }
 .actionSheet .actionSheetMenuItem:hover .actionsheetMenuItemIcon { color: rgb(var(--lf-accent)) !important; }
 .actionSheet .actionsheetDivider { background: rgba(255, 255, 255, .07) !important; margin: 6px 12px !important; }
+
+/* ==========================================================
+   v0.35 : fiche série, page saison, lecteur vidéo
+   ========================================================== */
+
+/* ---------- Fiche série ---------- */
+/* Résumé et infos sous les boutons, puis "À suivre", puis les saisons */
+#itemDetailPage .detailSection > :is(.verticalSection, .collectionItems) { order: 5; }
+#itemDetailPage .nextUpSection { margin-top: 26px !important; }
+/* Saisons : une rangée qui défile, sans barre, fondu discret à droite, sans nom */
+#itemDetailPage #listChildrenCollapsible :has(> .card) {
+  display: flex !important; flex-wrap: nowrap !important; overflow-x: auto; overflow-y: hidden; padding: 4px 0 14px;
+  scroll-snap-type: x proximity; scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 90px), rgba(0, 0, 0, .25)); mask-image: linear-gradient(to right, #000 calc(100% - 90px), rgba(0, 0, 0, .25));
+}
+#itemDetailPage #listChildrenCollapsible :has(> .card)::-webkit-scrollbar { display: none; }
+#itemDetailPage #listChildrenCollapsible .card { flex: 0 0 auto !important; width: 161px !important; scroll-snap-align: start; }
+#itemDetailPage #listChildrenCollapsible .cardBox { margin-left: 7px !important; margin-right: 7px !important; }
+#itemDetailPage #listChildrenCollapsible .cardBox > :is(.cardText, .cardFooter) { display: none !important; }
+#itemDetailPage .countIndicator { background: rgba(var(--lf-accent), .92) !important; box-shadow: 0 0 10px rgba(var(--lf-accent), .5); font-weight: 700; font-size: .8rem; }
+/* Rangées du bas alignées sur la même marge que le résumé (fiche film aussi) */
+#itemDetailPage .detailPageSecondaryContainer { padding-left: 4.5vw !important; }
+
+/* ---------- Page saison ---------- */
+/* Pas de résumé de saison */
+#itemDetailPage:has(#childrenContent .listItem) .detailSectionContent :is(.overview, .overview-controls) { display: none !important; }
+/* Retour vers la série : le nom de la série, sobre, flèche, glisse vers la gauche au survol (aussi sur la page épisode) */
+#itemDetailPage .nameContainer { display: flex !important; flex-direction: column; align-items: flex-start; }
+#itemDetailPage h1.parentName { font-size: 1.32rem !important; margin: 0 0 8px !important; line-height: 1 !important; }
+#itemDetailPage h1.parentName a {
+  display: inline-flex !important; align-items: center; gap: 8px; padding: 4px 0 !important; text-transform: uppercase; letter-spacing: .05em; font-weight: 500;
+  color: #fff !important; text-shadow: none !important; text-decoration: none !important; background: none !important; border: 0 !important; transition: color .25s, transform .25s !important;
+}
+#itemDetailPage h1.parentName a::before { content: "arrow_back"; font-family: "Material Icons"; font-size: 26px; text-transform: none; letter-spacing: 0; font-weight: 400; }
+@media (hover: hover) { #itemDetailPage h1.parentName a:hover { color: rgb(var(--lf-accent)) !important; transform: translateX(-4px); text-decoration: none !important; } }
+/* Titre de la saison en grand */
+#itemDetailPage .nameContainer h3.itemName { margin: 4px 0 0 !important; padding-left: 0 !important; font-size: 2.2rem !important; font-weight: 800 !important; color: #fff !important; opacity: 1 !important; letter-spacing: -.015em; line-height: 1.1 !important; }
+/* Liste des épisodes "façon Netflix" (par défaut) ; la grille reste dispo via html[data-lf-ep="grid"] (futur bouton JS) */
+#itemDetailPage #childrenContent .listItem-bottomoverview, #itemDetailPage #childrenContent .listItemMediaInfo .endsAt { display: none !important; }
+#itemDetailPage #childrenContent > .itemsContainer { margin-left: 0 !important; padding-right: 0 !important; }
+#itemDetailPage:has(#childrenContent .listItem) .detailPagePrimaryContent { padding-right: 4.5vw !important; }
+#itemDetailPage #childrenContent .listItem { position: relative; border-radius: 14px; transition: background .25s; }
+@media (hover: hover) { #itemDetailPage #childrenContent .listItem:hover { background: rgba(255, 255, 255, .045) !important; } }
+#itemDetailPage #childrenContent .listItemImage { border-radius: 10px !important; overflow: hidden; box-shadow: var(--lf-card-rest); align-items: center !important; justify-content: center !important; }
+#itemDetailPage #childrenContent .listItemBodyText:first-child { font-weight: 600; font-size: .95rem; }
+#itemDetailPage #childrenContent .listItemMediaInfo { color: rgba(255, 255, 255, .5) !important; font-size: .8rem; }
+#itemDetailPage #childrenContent .listViewUserDataButtons { opacity: .35; transition: opacity .25s; }
+#itemDetailPage #childrenContent .listItem:hover .listViewUserDataButtons { opacity: 1; }
+html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent > .itemsContainer { margin-left: -14px !important; max-width: none !important; }
+html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItem { padding: 12px 14px !important; margin: 0 !important; border: 0 !important; border-bottom: 1px solid rgba(255, 255, 255, .07) !important; border-radius: 0; }
+html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemImage { height: 130px !important; width: auto !important; aspect-ratio: 16 / 9; flex-shrink: 0; }
+html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemBody { display: grid !important; grid-template-columns: 1fr auto; column-gap: 16px; align-content: start; padding-left: 22px !important; padding-top: 10px !important; }
+html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemBodyText:first-child { grid-column: 1; grid-row: 1; }
+html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemMediaInfo { grid-column: 2; grid-row: 1; justify-self: end; }
+html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemMediaInfo .starRatingContainer { display: none !important; }
+html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItem-overview { grid-column: 1 / -1; grid-row: 2; margin-top: 6px !important; font-size: .82rem; line-height: 1.45; color: rgba(255, 255, 255, .6) !important; display: -webkit-box !important; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal !important; }
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent > .itemsContainer { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 22px 18px; }
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listItem { padding: 0 !important; margin: 0 !important; border: 0 !important; background: none !important; overflow: visible !important; contain: none !important; }
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listItem:hover { z-index: 2; }
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listItem-content { flex-direction: column !important; align-items: stretch !important; }
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listItemImage { width: 100% !important; height: auto !important; aspect-ratio: 16 / 9; margin: 0 !important; transition: transform .35s var(--lf-ease), box-shadow .35s; }
+@media (hover: hover) { html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listItem:hover .listItemImage { transform: scale(1.03); box-shadow: 0 0 0 1px rgba(var(--lf-accent), .6), 0 0 18px rgba(var(--lf-accent), .45); } }
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listItemBody { padding: 9px 2px 0 !important; }
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listItem-overview { display: none !important; }
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButtons { position: absolute; top: 6px; right: 6px; opacity: 0 !important; transform: scale(.78); transform-origin: top right; }
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listItem:hover .listViewUserDataButtons { opacity: 1 !important; }
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButtons button { color: #fff !important; background: none !important; border-radius: 50% !important; transition: background .25s, box-shadow .25s, transform .25s !important; }
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButtons .material-icons { filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .6)) drop-shadow(0 0 12px rgba(0, 0, 0, .35)); }
+@media (hover: hover) {
+  html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButtons button:hover { background: rgb(var(--lf-accent)) !important; box-shadow: 0 0 14px rgba(var(--lf-accent), .7) !important; transform: scale(1.08); }
+  html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButtons button:hover .material-icons { filter: none; color: #fff !important; }
+}
+/* Bouton lecture des vignettes : invisible, blanc au survol de l'épisode, accent au survol du bouton */
+#itemDetailPage #childrenContent .listItemImageButton {
+  width: 2.3em !important; height: 2.3em !important; padding: 0 !important; margin: 0 !important; border-radius: 50% !important; background: none !important; border: 0 !important;
+  color: #fff !important; display: inline-flex !important; align-items: center; justify-content: center; opacity: 0; transition: opacity .25s, background .25s, box-shadow .25s, transform .25s !important;
+}
+#itemDetailPage #childrenContent .listItem:hover .listItemImageButton, #itemDetailPage #childrenContent .listItemImageButton:focus-visible { opacity: 1; }
+#itemDetailPage #childrenContent .listItemImageButton-icon { font-size: 1.5em !important; filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .6)) drop-shadow(0 0 12px rgba(0, 0, 0, .35)); }
+@media (hover: hover) {
+  #itemDetailPage #childrenContent .listItemImageButton:hover { background: rgb(var(--lf-accent)) !important; box-shadow: 0 0 14px rgba(var(--lf-accent), .7) !important; transform: scale(1.08); }
+  #itemDetailPage #childrenContent .listItemImageButton:hover .listItemImageButton-icon { filter: none; }
+}
+/* Apparition des épisodes, saisons et rangées */
+#itemDetailPage .detailSection > .verticalSection:not(.hide), #itemDetailPage .detailPageSecondaryContainer > .verticalSection { animation: lfRowIn 1s cubic-bezier(.16, 1, .3, 1) both; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem { animation: lfRowIn .7s cubic-bezier(.16, 1, .3, 1) both; }
+#itemDetailPage #listChildrenCollapsible .card { animation: lfCardIn .8s cubic-bezier(.16, 1, .3, 1) both; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(1) { animation-delay: 0.100s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(2) { animation-delay: 0.135s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(3) { animation-delay: 0.170s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(4) { animation-delay: 0.205s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(5) { animation-delay: 0.240s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(6) { animation-delay: 0.275s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(7) { animation-delay: 0.310s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(8) { animation-delay: 0.345s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(9) { animation-delay: 0.380s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(10) { animation-delay: 0.415s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(11) { animation-delay: 0.450s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(12) { animation-delay: 0.485s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(13) { animation-delay: 0.520s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(14) { animation-delay: 0.555s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(15) { animation-delay: 0.590s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(16) { animation-delay: 0.625s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(17) { animation-delay: 0.660s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(18) { animation-delay: 0.695s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(19) { animation-delay: 0.730s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(20) { animation-delay: 0.765s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(21) { animation-delay: 0.800s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(22) { animation-delay: 0.835s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(23) { animation-delay: 0.870s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(24) { animation-delay: 0.905s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(25) { animation-delay: 0.940s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(26) { animation-delay: 0.975s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(27) { animation-delay: 1.010s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(28) { animation-delay: 1.045s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(29) { animation-delay: 1.080s; }
+#itemDetailPage #childrenContent > .itemsContainer > .listItem:nth-child(30) { animation-delay: 1.115s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(1) { animation-delay: 0.15s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(2) { animation-delay: 0.21s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(3) { animation-delay: 0.27s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(4) { animation-delay: 0.33s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(5) { animation-delay: 0.39s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(6) { animation-delay: 0.45s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(7) { animation-delay: 0.51s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(8) { animation-delay: 0.57s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(9) { animation-delay: 0.63s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(10) { animation-delay: 0.69s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(11) { animation-delay: 0.75s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(12) { animation-delay: 0.81s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(13) { animation-delay: 0.87s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(14) { animation-delay: 0.93s; }
+#itemDetailPage #listChildrenCollapsible .card:nth-child(15) { animation-delay: 0.99s; }
+
+/* ---------- Lecteur vidéo ---------- */
+/* Fonds dégradés nuit, commandes qui disparaissent plus vite */
+.videoOsdBottom { background: linear-gradient(0deg, rgba(5, 6, 10, .92) 0%, rgba(5, 6, 10, .55) 45%, rgba(5, 6, 10, 0) 100%) !important; padding-left: 3vw !important; padding-right: 3vw !important; transition-duration: .2s !important; }
+.skinHeader.osdHeader, .skinHeader.osdHeader.skinHeader-withBackground {
+  background: linear-gradient(180deg, rgba(5, 6, 10, .8) 0%, rgba(5, 6, 10, 0) 100%) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  box-shadow: none !important; padding-top: 16px !important; padding-bottom: 40px !important; transition-duration: .2s !important;
+}
+/* Retour + titre en haut : sobres, grands, ombrés ; retour qui glisse au survol */
+.osdHeader .headerBackButton .material-icons { font-size: 30px !important; }
+.osdHeader .pageTitle { font-size: 1.5rem !important; font-weight: 600 !important; }
+.osdHeader :is(.headerBackButton, .pageTitle) { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .75)); }
+/* Retirés : rembobiner, avance rapide, chapitres (boutons + repères), favori, "se terminera à" */
+.videoOsdBottom :is(.btnUserRating, .osdTimeText, .btnRewind, .btnFastForward, .btnPreviousChapter, .btnNextChapter), .videoOsdBottom .sliderMarkerContainer { display: none !important; }
+/* Temps à gauche et à droite */
+.videoOsdBottom :is(.osdPositionText, .osdDurationText) { font-size: .95rem !important; font-weight: 600 !important; color: #fff !important; line-height: 1 !important; align-self: center; margin-top: 3px !important; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); font-variant-numeric: tabular-nums; }
+/* Barre de progression : fine, même dégradé lumineux que les vignettes, s'épaissit et se soulève au survol */
+.videoOsdBottom .sliderContainer:not(.osdVolumeSliderContainer) > :is(input, .mdl-slider-background-flex-container) { transition: transform .25s var(--lf-ease); }
+.videoOsdBottom .sliderContainer:not(.osdVolumeSliderContainer):hover > :is(input, .mdl-slider-background-flex-container) { transform: translateY(-3px); }
+.videoOsdBottom .sliderContainer:not(.osdVolumeSliderContainer) .mdl-slider-background-flex {
+  height: 5px !important; margin-top: -2.5px !important; border-radius: 999px !important; overflow: visible !important; background: rgba(255, 255, 255, .16) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1), 0 2px 8px rgba(0, 0, 0, .5); transition: height .25s var(--lf-ease), margin-top .25s var(--lf-ease);
+}
+.videoOsdBottom .sliderContainer:not(.osdVolumeSliderContainer):hover .mdl-slider-background-flex { height: 8.5px !important; margin-top: -4.25px !important; }
+.videoOsdBottom .sliderContainer .mdl-slider-background-upper { background: rgba(255, 255, 255, .2) !important; border-radius: 999px !important; }
+.videoOsdBottom .sliderContainer:not(.osdVolumeSliderContainer) .mdl-slider-background-lower {
+  border-radius: 999px !important; filter: saturate(1.3);
+  background: linear-gradient(90deg, rgb(var(--lf-accent-alt)) 0%, color-mix(in srgb, rgb(var(--lf-accent-alt)) var(--lf-pg-end), #fff) 100%) !important;
+  box-shadow: 0 0 var(--lf-pg-g1) rgba(var(--lf-accent-alt), var(--lf-pg-a1)), 0 0 var(--lf-pg-g2) rgba(var(--lf-accent-alt), var(--lf-pg-a2)), 0 0 var(--lf-pg-g3) rgba(var(--lf-accent-alt), var(--lf-pg-a3)) !important;
+}
+/* Curseur : rond en verre façon Apple, petit au repos, grand au survol, impulsion au clic */
+.videoOsdBottom .mdl-slider::-webkit-slider-thumb {
+  height: 10px !important; width: 10px !important; border-radius: 50% !important; transform: none !important; transition: transform .2s var(--lf-ease), box-shadow .2s !important;
+  background: radial-gradient(120% 90% at 50% 15%, #fff 0%, rgba(255, 255, 255, .97) 45%, rgba(226, 230, 240, .95) 100%) !important; border: .5px solid #fff !important;
+  box-shadow: inset 0 1.5px 1px #fff, inset 0 -2px 3px rgba(0, 0, 0, .14), 0 0 0 1px rgba(255, 255, 255, .25), 0 0 10px rgba(255, 255, 255, .55), 0 2px 6px rgba(0, 0, 0, .4) !important;
+}
+.videoOsdBottom .sliderContainer:not(.osdVolumeSliderContainer):hover .osdPositionSlider::-webkit-slider-thumb { transform: scale(1.9) !important; }
+.videoOsdBottom .osdPositionSlider:active::-webkit-slider-thumb { transform: scale(1.5) !important; box-shadow: 0 0 0 5px rgba(var(--lf-accent), .25), 0 2px 8px rgba(0, 0, 0, .45) !important; transition-duration: .08s !important; }
+/* Temps au survol de la barre : juste le temps, sans fond ni chapitre, ne capte pas la souris */
+.videoOsdBottom .sliderBubble { background: none !important; box-shadow: none !important; padding: 0 !important; margin-left: 0 !important; pointer-events: none !important; transform: translate(-50%, -100%) !important; }
+.videoOsdBottom .sliderBubble :is(.chapterThumbContainer, .chapterThumbTextContainer) { background: none !important; box-shadow: none !important; padding: 0 !important; }
+.videoOsdBottom .sliderBubble :is(.chapterThumbText-dim, .chapterThumb) { display: none !important; }
+.videoOsdBottom .sliderBubble :is(h2.chapterThumbText, .sliderBubbleText) { margin: 0 0 6px !important; font-size: .9rem !important; font-weight: 600 !important; color: #fff !important; text-align: center; text-shadow: 0 1px 3px rgba(0, 0, 0, .9), 0 0 10px rgba(0, 0, 0, .6); }
+/* Boutons : icônes blanches, accent + grossissement au survol, lecture/pause plus grand */
+.videoOsdBottom .buttons { display: flex !important; align-items: center; position: relative; }
+.videoOsdBottom .buttons > div:first-child { order: 0; display: flex; align-items: center; }
+.videoOsdBottom .buttons > .volumeButtons { order: 1; margin-left: 8px; }
+.videoOsdBottom .buttons > :is(#popupPreviewButton, .btnSubtitles, .btnAudio, .btnVideoOsdSettings, .btnPip, .btnFullscreen, .btnAirPlay) { order: 2; }
+.videoOsdBottom .buttons > #popupPreviewButton, .videoOsdBottom .buttons:not(:has(> #popupPreviewButton)) > .btnSubtitles { margin-left: auto !important; }
+.videoOsdBottom .buttons button, .osdHeader .headerButton { color: rgba(255, 255, 255, .88) !important; background: none !important; transform-origin: 50% 50% !important; transition: color .25s, transform .25s, filter .25s !important; }
+@media (hover: hover) {
+  .videoOsdBottom .buttons button:hover { color: rgb(var(--lf-accent)) !important; transform: scale(1.2) !important; filter: drop-shadow(0 0 5px rgba(var(--lf-accent), .45)); }
+  .osdHeader .headerBackButton:hover { color: rgb(var(--lf-accent)) !important; transform: translateX(-4px) !important; }
+}
+.videoOsdBottom .btnPause { display: inline-flex !important; align-items: center; justify-content: center; }
+.videoOsdBottom .btnPause .material-icons { font-size: 2.5em !important; line-height: 1 !important; }
+/* Volume : barre blanche qui sort du haut-parleur au survol, collée à lui */
+.videoOsdBottom .volumeButtons { display: flex !important; align-items: center; position: relative; }
+.videoOsdBottom .osdVolumeSliderContainer {
+  position: relative !important; height: 43px; width: 0 !important; min-width: 0 !important; padding: 0 !important; margin: 0 !important; opacity: 0; overflow: hidden !important;
+  display: flex !important; align-items: center; transition: width .3s var(--lf-ease), opacity .2s !important;
+}
+.videoOsdBottom .volumeButtons:is(:hover, :focus-within) .osdVolumeSliderContainer { width: 100px !important; opacity: 1 !important; overflow: visible !important; margin-left: -14px !important; margin-right: 10px !important; }
+.videoOsdBottom .osdVolumeSliderContainer .mdl-slider-background-flex-container { position: absolute; left: 0; right: 0; top: 50%; }
+.videoOsdBottom .osdVolumeSliderContainer .mdl-slider-background-flex { height: 5px !important; margin-top: -2.5px !important; border-radius: 999px !important; background: rgba(255, 255, 255, .18) !important; overflow: visible !important; box-shadow: none !important; }
+.videoOsdBottom .osdVolumeSliderContainer .mdl-slider-background-lower { background: #fff !important; box-shadow: none !important; filter: none !important; border-radius: 999px !important; }
+
+/* ---------- Menus du lecteur (sous-titres, audio, paramètres) + aperçu des épisodes ---------- */
+@keyframes lfOpenB { 0% { opacity: 0; transform: scale(.94) translateY(10px); } 60% { opacity: 1; transform: scale(1.015) translateY(-2px); } 100% { opacity: 1; transform: none; } }
+@keyframes lfPopOut { to { opacity: 0; transform: scale(.94) translateY(6px); } }
+@keyframes lfItemIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+body:has(#videoOsdPage:not(.hide)) :is(.actionSheet, #popupFocusContainer) {
+  background: linear-gradient(135deg, rgba(255, 255, 255, .13) 0%, rgba(255, 255, 255, .02) 50%), rgba(14, 15, 20, .42) !important;
+  backdrop-filter: blur(28px) saturate(170%) !important; -webkit-backdrop-filter: blur(28px) saturate(170%) !important;
+  border: 1px solid rgba(255, 255, 255, .14) !important; border-radius: 18px !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), 0 18px 44px rgba(0, 0, 0, .45) !important;
+}
+body:has(#videoOsdPage:not(.hide)) .actionSheet { animation: none; margin-top: 0 !important; translate: 0 -40px; transform-origin: bottom right; }
+body:has(#videoOsdPage:not(.hide)) :is(.actionSheet[style*="scaleup"], #popupFocusContainer) { animation: lfOpenB .34s cubic-bezier(.22, 1, .36, 1) both !important; }
+body:has(#videoOsdPage:not(.hide)) .actionSheet[style*="scaledown"] { animation: lfPopOut .2s cubic-bezier(.55, 0, 1, .45) both !important; }
+body:has(#videoOsdPage:not(.hide)) .dialogBackdropOpened { opacity: .15 !important; }
+body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetTitle { margin: 0 !important; padding: 14px 18px 6px !important; font-size: 1.05rem !important; font-weight: 700; }
+body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetContent { padding: 0 0 6px !important; }
+body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem { animation: lfItemIn .22s cubic-bezier(.2, .8, .2, 1) both; padding: 6px 16px 6px 10px !important; min-height: 0 !important; font-size: .88rem; }
+body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem:hover { background: none !important; }
+body:has(#videoOsdPage:not(.hide)) .actionSheet .actionsheetMenuItemIcon { width: 1.3em !important; min-width: 1.3em !important; margin-right: .45em !important; font-size: 1.1em !important; }
+body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem .listItemBody { transition: color .2s, transform .25s var(--lf-ease); }
+@media (hover: hover) { body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem:hover .listItemBody { color: rgb(var(--lf-accent)) !important; transform: translateX(4px); } }
+/* Qualité : noms compréhensibles (le menu se reconnaît à son choix 420 kbps) */
+.actionSheet:has([data-id="420000"]) .actionSheetMenuItem[data-id] .actionSheetItemText { font-size: 0 !important; height: auto !important; max-height: none !important; overflow: visible !important; display: block !important; }
+.actionSheet:has([data-id="420000"]) .actionSheetMenuItem[data-id] .actionSheetItemText::before { display: inline; font-size: .88rem; line-height: 1.4; }
+.actionSheet:has([data-id="420000"]) .actionSheetMenuItem[data-id] .actionSheetItemText::after { display: inline; font-size: .72rem; line-height: 1.4; margin-left: 8px; opacity: .5; }
+.actionSheet:has([data-id="420000"]) [data-id="0"] .actionSheetItemText::before { content: "Automatique"; }
+.actionSheet:has([data-id="420000"]) [data-id="0"] .actionSheetItemText::after { content: "recommandé"; }
+.actionSheet:has([data-id="420000"]) [data-id="120000000"] .actionSheetItemText::before { content: "Maximale"; }
+.actionSheet:has([data-id="420000"]) [data-id="120000000"] .actionSheetItemText::after { content: "120 Mbps"; }
+.actionSheet:has([data-id="420000"]) [data-id="80000000"] .actionSheetItemText::before { content: "Maximale"; }
+.actionSheet:has([data-id="420000"]) [data-id="80000000"] .actionSheetItemText::after { content: "4K · 80 Mbps"; }
+.actionSheet:has([data-id="420000"]) :is([data-id="60000000"], [data-id="40000000"]) .actionSheetItemText::before { content: "Ultra"; }
+.actionSheet:has([data-id="420000"]) [data-id="60000000"] .actionSheetItemText::after { content: "4K · 60 Mbps"; }
+.actionSheet:has([data-id="420000"]) [data-id="40000000"] .actionSheetItemText::after { content: "4K · 40 Mbps"; }
+.actionSheet:has([data-id="420000"]) :is([data-id="20000000"], [data-id="15000000"]) .actionSheetItemText::before { content: "Très haute"; }
+.actionSheet:has([data-id="420000"]) [data-id="20000000"] .actionSheetItemText::after { content: "1080p · 20 Mbps"; }
+.actionSheet:has([data-id="420000"]) [data-id="15000000"] .actionSheetItemText::after { content: "1080p · 15 Mbps"; }
+.actionSheet:has([data-id="420000"]) :is([data-id="10000000"], [data-id="8000000"]) .actionSheetItemText::before { content: "Haute"; }
+.actionSheet:has([data-id="420000"]) [data-id="10000000"] .actionSheetItemText::after { content: "1080p · 10 Mbps"; }
+.actionSheet:has([data-id="420000"]) [data-id="8000000"] .actionSheetItemText::after { content: "720p · 8 Mbps"; }
+.actionSheet:has([data-id="420000"]) :is([data-id="6000000"], [data-id="4000000"]) .actionSheetItemText::before { content: "Bonne"; }
+.actionSheet:has([data-id="420000"]) [data-id="6000000"] .actionSheetItemText::after { content: "720p · 6 Mbps"; }
+.actionSheet:has([data-id="420000"]) [data-id="4000000"] .actionSheetItemText::after { content: "720p · 4 Mbps"; }
+.actionSheet:has([data-id="420000"]) [data-id="3000000"] .actionSheetItemText::before { content: "Moyenne"; }
+.actionSheet:has([data-id="420000"]) [data-id="3000000"] .actionSheetItemText::after { content: "480p · 3 Mbps"; }
+.actionSheet:has([data-id="420000"]) [data-id="1500000"] .actionSheetItemText::before { content: "Basse"; }
+.actionSheet:has([data-id="420000"]) [data-id="1500000"] .actionSheetItemText::after { content: "480p · 1,5 Mbps"; }
+.actionSheet:has([data-id="420000"]) [data-id="720000"] .actionSheetItemText::before { content: "Très basse"; }
+.actionSheet:has([data-id="420000"]) [data-id="720000"] .actionSheetItemText::after { content: "360p · 0,7 Mbps"; }
+.actionSheet:has([data-id="420000"]) [data-id="420000"] .actionSheetItemText::before { content: "Économie de données"; }
+.actionSheet:has([data-id="420000"]) [data-id="420000"] .actionSheetItemText::after { content: "240p · 0,4 Mbps"; }
+/* Aperçu des épisodes (plugin InPlayerEpisodePreview) : compact, centré au-dessus de son bouton */
+#previewPopup .dialogBackdrop { opacity: .2 !important; }
+#popupFocusContainer { top: auto !important; bottom: 94px !important; left: auto !important; right: calc(3vw + 116px) !important; width: 360px !important; max-width: 90vw; max-height: 52vh !important; margin: 0 !important; transform-origin: bottom center; }
+#popupFocusContainer #popupContentContainer { max-height: calc(52vh - 50px) !important; }
+#popupFocusContainer .previewQuickActionContainer, #popupFocusContainer .previewGroupWatchedCount { display: none !important; }
+#popupFocusContainer #popupTitleContainer { display: flex !important; align-items: center !important; gap: 8px !important; padding: 12px 16px 6px !important; background: none !important; }
+#popupFocusContainer #popupTitleContainer .actionSheetTitle { padding: 0 !important; margin: 0 !important; font-size: 1.05rem !important; line-height: 17px !important; }
+#popupFocusContainer #popupTitleContainer #popupTitleSwitchIcon { margin: 0 !important; padding: 0 !important; width: auto !important; min-width: 0 !important; height: 17px; font-size: 17px !important; line-height: 17px !important; display: inline-flex; align-items: center; }
+#popupTitleContainer :is(.actionSheetTitle, #popupTitleSwitchIcon) { transition: color .2s, transform .25s var(--lf-ease) !important; }
+@media (hover: hover) {
+  #popupTitleContainer:hover :is(.actionSheetTitle, #popupTitleSwitchIcon) { color: rgb(var(--lf-accent)) !important; }
+  #popupTitleContainer:hover #popupTitleSwitchIcon { transform: translateX(-4px); }
+}
+#popupContentContainer > .listItem { animation: lfItemIn .22s cubic-bezier(.2, .8, .2, 1) both; padding-top: 0 !important; padding-bottom: 0 !important; min-height: 0 !important; background: none !important; }
+#popupContentContainer .previewItemTitle { padding-top: 5px !important; padding-bottom: 5px !important; min-height: 0 !important; background: none !important; transform-origin: left center; transition: color .2s, transform .25s var(--lf-ease) !important; }
+#popupFocusContainer #popupContentContainer .previewItemTitle > span { transition: color .2s; }
+@media (hover: hover) {
+  #popupFocusContainer #popupContentContainer .previewItemTitle:hover { transform: scale(1.04) !important; }
+  #popupFocusContainer #popupContentContainer .previewItemTitle:hover, #popupFocusContainer #popupContentContainer .previewItemTitle:hover > span, #popupFocusContainer #popupContentContainer .previewItemTitle:hover .actionSheetItemText { color: rgb(var(--lf-accent)) !important; opacity: 1 !important; }
+}
+/* Épisode en cours : titre + résumé (sans vignette ni infos), capsule "En cours" épurée */
+#popupContentContainer .previewListItemContent { padding: 0 0 6px 22px !important; margin: 0 !important; height: auto !important; min-height: 0 !important; animation: lfItemIn .22s cubic-bezier(.2, .8, .2, 1) both; }
+#popupContentContainer :is(.previewItemDetails, .previewItemContentRow > :not(:last-child)) { display: none !important; }
+#popupContentContainer .previewItemContentRow { height: auto !important; min-height: 0 !important; margin: 0 !important; }
+#popupContentContainer .previewItemContentRow > :last-child { font-size: .8rem; opacity: .7; line-height: 1.4; margin: 0 !important; padding: 0 !important; height: auto !important; max-height: none !important; }
+#popupContentContainer > .listItem:has(.previewListItemContent:not(.hide)) .previewItemTitle::after {
+  content: "En cours"; margin-left: 10px; padding: 1px 7px; border-radius: 999px; font-size: .64rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .85); border: 1px solid rgba(255, 255, 255, .35); vertical-align: middle;
+}
+#popupContentContainer > .listItem:nth-child(2) { animation-delay: 0.03s; }
+#popupContentContainer > .listItem:nth-child(3) { animation-delay: 0.06s; }
+#popupContentContainer > .listItem:nth-child(4) { animation-delay: 0.09s; }
+#popupContentContainer > .listItem:nth-child(5) { animation-delay: 0.12s; }
+#popupContentContainer > .listItem:nth-child(6) { animation-delay: 0.15s; }
+#popupContentContainer > .listItem:nth-child(7) { animation-delay: 0.18s; }
+#popupContentContainer > .listItem:nth-child(8) { animation-delay: 0.21s; }
