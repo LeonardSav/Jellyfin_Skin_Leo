@@ -1,0 +1,716 @@
+/* ==========================================================
+   LeoFlix : thème Jellyfin maison (v0.34)
+   Base : thème sombre d'origine de Jellyfin 12.4, sans import externe
+   Validé : accueil (boutons, barre du haut, vignettes, bandeau Editor's Choice)
+   ========================================================== */
+
+/* Police DM Sans (OFL 1.1), version figée, servie par jsDelivr comme ce thème */
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/dm-sans@5.3.0/400.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/dm-sans@5.3.0/500.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/dm-sans@5.3.0/600.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/dm-sans@5.3.0/800.css');
+
+/* ---------- Variables ---------- */
+:root {
+  --lf-accent: 70, 130, 180;        /* bleu acier : accent principal */
+  --lf-accent-alt: 46, 134, 210;    /* acier vif : halo vignettes, barre de progression */
+  --lf-bg: 9, 9, 11;
+  --lf-glass: rgba(20, 20, 24, 0.55);
+  --lf-glass-border: rgba(255, 255, 255, 0.08);
+  --lf-blur: 16px;
+  --lf-ease: cubic-bezier(.2, .8, .2, 1);
+}
+body {
+  --jf-palette-primary-main: rgb(var(--lf-accent));
+  --jf-palette-secondary-main: rgb(var(--lf-accent));
+
+  /* Verre (boutons et barre du haut) */
+  --lf-glass-a: .18; --lf-glass-blur: 20px; --lf-glass-sat: 150%; --lf-sheen: .16;
+  --lf-rest-border: .08; --lf-edge-a: .5;
+  --lf-halo: 0 0 14px rgba(var(--lf-accent), .55), 0 0 30px rgba(var(--lf-accent), .25);
+
+  /* Boutons "Mes médias" */
+  --lf-btn-w: 150px; --lf-btn-scale: 1.08; --lf-press-scale: .98;
+
+  /* Vignettes */
+  --lf-card-radius: 16px; --lf-card-scale: 1.05; --lf-lift: -6px;
+  --lf-card-rest: 0 0 0 1px rgba(255, 255, 255, .1), 0 8px 22px rgba(0, 0, 0, .65); /* contour fin + ombre */
+  --lf-card-halo-color: var(--lf-accent-alt);
+  --lf-card-halo: 0 0 0 1px rgba(var(--lf-card-halo-color), .7),
+                  0 0 21px rgba(var(--lf-card-halo-color), .75),
+                  0 0 44px rgba(var(--lf-card-halo-color), .42);
+
+  /* Barre de progression */
+  --lf-prog-h: 8px; --lf-prog-side: 15px; --lf-prog-bottom: 8px;
+
+  /* Boutons vu / aimé / plus sur la vignette */
+  --lf-ob-scale: .8;
+}
+
+/* ---------- Fond ---------- */
+/* Nuit teintée : couleur d'accent en haut, presque noir en bas (suit l'accent de chaque utilisateur) */
+.backgroundContainer { background: linear-gradient(180deg, color-mix(in srgb, rgb(var(--lf-accent)) 18%, #05060a) 0%, #07080c 70%) !important; }
+.backgroundContainer.withBackdrop {
+  background:
+    linear-gradient(to right, rgba(0, 0, 0, .55) 0%, transparent 65%),
+    linear-gradient(180deg, color-mix(in srgb, rgba(var(--lf-accent), .5) 35%, rgba(5, 6, 10, .55)) 0%, rgba(5, 6, 10, .75) 75%) !important;
+}
+.skinHeader.skinHeader-withBackground {
+  background: var(--lf-glass) !important;
+  backdrop-filter: blur(var(--lf-blur)); -webkit-backdrop-filter: blur(var(--lf-blur));
+  border-bottom: 1px solid var(--lf-glass-border);
+}
+
+/* ---------- Capsule en verre (boutons "Mes médias" + barre du haut) ---------- */
+.homeLibraryButton,
+header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge) {
+  border-radius: 999px !important;
+  text-transform: uppercase; letter-spacing: .06em;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, var(--lf-sheen)) 0%, rgba(255, 255, 255, calc(var(--lf-sheen) / 4)) 45%, rgba(255, 255, 255, 0) 100%),
+    rgba(18, 18, 22, var(--lf-glass-a)) !important;
+  backdrop-filter: blur(var(--lf-glass-blur)) saturate(var(--lf-glass-sat)) !important;
+  -webkit-backdrop-filter: blur(var(--lf-glass-blur)) saturate(var(--lf-glass-sat)) !important;
+  border: 1px solid rgba(255, 255, 255, var(--lf-rest-border)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-sheen) + .04)), 0 4px 14px rgba(0, 0, 0, .35);
+  transition: transform .3s var(--lf-ease), border-color .3s, box-shadow .3s, color .3s, text-shadow .3s, filter .15s !important;
+}
+@media (hover: hover) {
+  .homeLibraryButton:hover,
+  header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge):hover {
+    transform: scale(var(--lf-btn-scale));
+    color: rgb(var(--lf-accent)) !important;
+    text-shadow: 0 0 10px rgba(var(--lf-accent), .8);
+    border-color: rgba(var(--lf-accent), var(--lf-edge-a)) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-sheen) + .08)), var(--lf-halo), 0 8px 22px rgba(0, 0, 0, .5) !important;
+  }
+  .homeLibraryButton:hover .homeLibraryIcon,
+  .homeLibraryButton:hover .homeLibraryText { color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .8); }
+  header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge):hover svg { filter: drop-shadow(0 0 6px rgba(var(--lf-accent), .8)); }
+}
+.homeLibraryButton:active,
+header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge):active {
+  transform: scale(var(--lf-press-scale)) !important; filter: brightness(1.1); transition-duration: .08s !important;
+}
+
+/* ---------- Boutons "Mes médias" ---------- */
+.homeLibraryButton {
+  width: var(--lf-btn-w) !important; min-width: 0 !important; flex: 0 0 var(--lf-btn-w) !important;
+  justify-content: center !important;
+}
+.homeLibraryButton .homeLibraryIcon, .homeLibraryButton .homeLibraryText { transition: color .3s, text-shadow .3s; }
+
+/* ---------- Barre du haut ---------- */
+header.MuiAppBar-root { background: transparent !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+header.MuiAppBar-root .MuiToolbar-root { padding-top: 14px; padding-bottom: 6px; }
+header.MuiAppBar-root .MuiStack-root > a.MuiButton-sizeLarge { margin-right: 28px !important; } /* espace après le logo */
+header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge) {
+  padding: 9px 18px !important; margin: 0 7px !important; line-height: 1 !important;
+  display: inline-flex !important; align-items: center !important; font-size: .78rem;
+}
+header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge) .MuiButton-startIcon {
+  margin-top: 0 !important; margin-bottom: 0 !important; display: inline-flex; align-items: center;
+}
+
+/* ---------- Rangées : un peu d'air pour le zoom et le soulèvement ---------- */
+.verticalSection > .emby-scroller { padding-top: 10px; }
+
+/* ---------- Vignettes ---------- */
+/* Jellyfin isole chaque vignette (contain) : ça coupait le zoom/halo
+   et coinçait barre + pastilles sous le voile flouté */
+.card { contain: layout style !important; }
+.cardContent, .cardContent .cardImageContainer, a.cardImageContainer.cardContent { contain: none !important; }
+
+.cardScalable, .cardImageContainer, .cardOverlayContainer, .cardPadder, .blurhash-canvas { border-radius: var(--lf-card-radius) !important; }
+.cardImageContainer { overflow: hidden; }
+.cardBox { transition: transform .35s var(--lf-ease); will-change: transform; backface-visibility: hidden; }
+.cardScalable { box-shadow: var(--lf-card-rest); transition: box-shadow .35s var(--lf-ease); }
+@media (hover: hover) {
+  .card:hover .cardBox { transform: translateY(var(--lf-lift)) scale(var(--lf-card-scale)) !important; z-index: 4; }
+  .card:hover .cardScalable { box-shadow: var(--lf-card-halo) !important; }
+  .card:hover .cardBox, .card:hover .cardImageContainer { box-shadow: none !important; }
+}
+.card:active .cardBox { transform: translateY(var(--lf-lift)) scale(calc(var(--lf-card-scale) - .03)) !important; transition-duration: .08s !important; }
+
+/* Voile au survol : dégradé par le bas + noir 15 % + flou léger + image éclaircie */
+.cardOverlayContainer {
+  background: linear-gradient(to top, rgba(0, 0, 0, .88) 0%, rgba(0, 0, 0, .25) 55%, transparent 100%), rgba(0, 0, 0, .15) !important;
+  backdrop-filter: blur(1px) saturate(125%) brightness(1.12) !important;
+  -webkit-backdrop-filter: blur(1px) saturate(125%) brightness(1.12) !important;
+  transition: opacity .3s !important;
+}
+
+/* Bouton lecture : d'origine, accent + icône blanche à son survol */
+.cardOverlayFab-primary { transition: background .25s, box-shadow .25s, transform .25s !important; }
+@media (hover: hover) {
+  .cardOverlayFab-primary:hover { background: rgb(var(--lf-accent)) !important; box-shadow: 0 0 16px rgba(var(--lf-accent), .7) !important; transform: scale(1.08); }
+  .cardOverlayFab-primary:hover * { color: #fff !important; }
+}
+
+/* Boutons vu / aimé / plus : en haut à gauche, "plus" en premier, plus petits */
+.cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) {
+  top: 6px !important; bottom: auto !important; left: 6px !important; right: auto !important;
+  display: flex !important; align-items: center; gap: 2px;
+  transform: scale(var(--lf-ob-scale)); transform-origin: top left;
+}
+.cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) > :is([data-action="menu"], .MuiButtonGroup-root > :last-child) { order: -1; }
+.cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) button { border-radius: 50% !important; transition: background .25s, box-shadow .25s, transform .25s !important; }
+.cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) button :is(.material-icons, svg) { filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .45)) drop-shadow(0 0 12px rgba(0, 0, 0, .3)); }
+@media (hover: hover) {
+  .cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) button:hover { background: rgb(var(--lf-accent)) !important; box-shadow: 0 0 14px rgba(var(--lf-accent), .7) !important; transform: scale(1.08); }
+  .cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) button:hover * { color: #fff !important; }
+  .cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) button:hover :is(.material-icons, svg) { filter: none; }
+}
+
+/* Pastilles (épisodes restants, "vu") : rondes, en haut à droite, au-dessus du voile */
+.cardIndicators { top: 10px !important; right: 10px !important; z-index: 6 !important; pointer-events: none; }
+.countIndicator, .playedIndicator {
+  background: rgb(var(--lf-accent)) !important;
+  border-radius: 50% !important; width: 1.9em !important; min-width: 1.9em !important; height: 1.9em !important;
+  line-height: 1 !important; font-size: 12px; padding: 0 !important;
+  display: inline-flex !important; align-items: center; justify-content: center; box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .25), 0 6px 18px rgba(0, 0, 0, .45) !important;
+}
+
+/* Barre de progression : flottante, capsule, piste en verre clair + ombre portée, au-dessus du voile */
+.innerCardFooter {
+  position: absolute !important; z-index: 6 !important; pointer-events: none;
+  left: var(--lf-prog-side) !important; right: var(--lf-prog-side) !important; bottom: 10px !important; width: auto !important;
+}
+.itemProgressBar {
+  border-radius: 999px; overflow: visible !important; height: var(--lf-prog-h) !important;
+  background: rgba(255, 255, 255, .18) !important; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 3px 10px rgba(0, 0, 0, .6), 0 1px 3px rgba(0, 0, 0, .5) !important;
+}
+/* Remplissage : dégradé vers le clair + halo (variante D : pointe claire, halo doux)
+   Variante A gardée de côté : --lf-pg-end: 55%; g1/g2/g3: 6px 14px 28px; a1/a2/a3: 1 .8 .45 */
+body { --lf-pg-end: 40%; --lf-pg-g1: 4px; --lf-pg-g2: 10px; --lf-pg-g3: 20px; --lf-pg-a1: .8; --lf-pg-a2: .5; --lf-pg-a3: .25; }
+.itemProgressBarForeground {
+  border-radius: 999px !important; filter: saturate(1.3);
+  background: linear-gradient(90deg, rgb(var(--lf-accent-alt)) 0%, color-mix(in srgb, rgb(var(--lf-accent-alt)) var(--lf-pg-end), #fff) 100%) !important;
+  box-shadow: 0 0 var(--lf-pg-g1) rgba(var(--lf-accent-alt), var(--lf-pg-a1)),
+              0 0 var(--lf-pg-g2) rgba(var(--lf-accent-alt), var(--lf-pg-a2)),
+              0 0 var(--lf-pg-g3) rgba(var(--lf-accent-alt), var(--lf-pg-a3)) !important;
+}
+
+/* Anneau de scan (%) masqué sur les tuiles de médiathèques */
+.card[data-type="CollectionFolder"] .progressring { display: none !important; }
+
+/* ---------- Titres ---------- */
+/* Masqués partout... */
+:where(.homeSectionsContainer, .libraryPage:not(#itemDetailPage)) .cardBox > .cardText,
+:where(.homeSectionsContainer, .libraryPage:not(#itemDetailPage)) .cardFooter { display: none !important; }
+/* ...sauf les épisodes ("À suivre") : nom de la série en bas à gauche de la vignette */
+.card[data-type="Episode"] .cardBox { display: grid !important; grid-template-columns: 100%; grid-template-rows: 1fr auto auto; }
+.card[data-type="Episode"] .cardBox > .cardScalable { grid-row: 1 / -1; grid-column: 1; }
+.card[data-type="Episode"] .cardBox > .cardText {
+  display: block !important; grid-column: 1; position: relative; z-index: 7; pointer-events: none;
+  text-align: left !important; padding: 0 14px 0 20px !important; font-weight: 600;
+  color: #fff !important; text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 8px rgba(0, 0, 0, .6) !important;
+}
+.card[data-type="Episode"] .cardBox > .cardText a { color: inherit !important; }
+.card[data-type="Episode"] .cardBox > .cardText-first { grid-row: 2; font-size: 1.05em; }
+.card[data-type="Episode"] .cardBox > .cardText-secondary { grid-row: 3; padding-bottom: 13px !important; font-weight: 400; color: rgba(255, 255, 255, .85) !important; }
+
+/* ---------- Bandeau "film en tête" (plugin Editor's Choice) ---------- */
+/* Pleine largeur sous la barre du haut, fondu doux vers la page avec une teinte d'accent */
+body { --lf-hero-h: 65vh; --lf-hero-pull: 68px; --lf-mask-start: 55%; }
+.homeSectionsContainer .editorsChoiceContainer {
+  padding: 0 !important;
+  margin-top: calc(-1 * var(--lf-hero-pull)) !important;
+  margin-bottom: calc(var(--lf-hero-h) * -.12) !important; /* les rangées remontent dans le fondu */
+}
+.homeSectionsContainer > .verticalSection:not(.editorsChoiceContainer) { position: relative; z-index: 2; }
+.editorsChoiceContainer .splide, .editorsChoiceContainer .splide__track,
+.editorsChoiceContainer .splide__list, .editorsChoiceContainer .editorsChoiceItemBanner { height: var(--lf-hero-h) !important; box-shadow: none !important; }
+.editorsChoiceContainer .splide__track { border-radius: 0 !important; }
+/* L'image passe dans un pseudo-élément pour que le fondu ne touche pas le texte ni le bouton */
+.editorsChoiceItemBanner { position: relative; background-size: 0 0 !important; animation: none !important; }
+.editorsChoiceItemBanner::before, .editorsChoiceItemBanner::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 var(--lf-mask-start), transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 var(--lf-mask-start), transparent 100%);
+}
+.editorsChoiceItemBanner::before { z-index: 0; background-image: inherit; background-size: cover; background-position: center 22%; }
+.editorsChoiceItemBanner::after { z-index: 1; background: linear-gradient(90deg, rgba(0, 0, 0, .78) 0%, rgba(0, 0, 0, .45) 30%, rgba(0, 0, 0, 0) 62%); }
+.editorsChoiceItemBanner > div {
+  position: relative; z-index: 2;
+  display: flex !important; flex-direction: column; justify-content: flex-end; align-items: flex-start;
+  padding: 0 4.5vw calc(var(--lf-hero-h) * .2) 4.5vw !important;
+  background: none !important; /* pas de teinte : l'image se fond directement dans le fond de page */
+}
+.editorsChoiceItemLogo {
+  max-height: 120px !important; max-width: min(420px, 40vw) !important; width: auto !important; height: auto !important;
+  object-fit: contain; object-position: left bottom; filter: drop-shadow(0 4px 18px rgba(0, 0, 0, .6)); margin-bottom: 14px;
+}
+.editorsChoiceItemRating { margin: 0 0 10px !important; width: auto !important; text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
+.editorsChoiceItemBanner > div > p.editorsChoiceItemOverview {
+  max-width: 560px !important; width: auto !important; height: auto !important; margin: 0 0 20px !important;
+  color: rgba(255, 255, 255, .86) !important; font-size: .98rem; line-height: 1.5; text-shadow: 0 1px 3px rgba(0, 0, 0, .85);
+  display: -webkit-box !important; -webkit-line-clamp: 3 !important; -webkit-box-orient: vertical !important; overflow: hidden !important;
+}
+/* Bouton Regarder : même capsule en verre que la barre du haut */
+.editorsChoiceItemBanner > div > .editorsChoiceItemButton {
+  position: static !important; margin: 0 !important; padding: 11px 30px !important;
+  border-radius: 999px !important; text-transform: uppercase; letter-spacing: .06em; font-weight: 500; color: #fff !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, var(--lf-sheen)) 0%, rgba(255, 255, 255, calc(var(--lf-sheen) / 4)) 45%, rgba(255, 255, 255, 0) 100%),
+    rgba(18, 18, 22, var(--lf-glass-a)) !important;
+  backdrop-filter: blur(var(--lf-glass-blur)) saturate(var(--lf-glass-sat)) !important;
+  -webkit-backdrop-filter: blur(var(--lf-glass-blur)) saturate(var(--lf-glass-sat)) !important;
+  border: 1px solid rgba(255, 255, 255, var(--lf-rest-border)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-sheen) + .04)), 0 4px 14px rgba(0, 0, 0, .35) !important;
+  transition: transform .3s var(--lf-ease), border-color .3s, box-shadow .3s, color .3s, text-shadow .3s !important;
+}
+@media (hover: hover) {
+  .editorsChoiceItemBanner > div > .editorsChoiceItemButton:hover {
+    transform: scale(var(--lf-btn-scale)); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .8);
+    border-color: rgba(var(--lf-accent), var(--lf-edge-a)) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-sheen) + .08)), var(--lf-halo), 0 8px 22px rgba(0, 0, 0, .5) !important;
+  }
+}
+.editorsChoiceItemBanner > div > .editorsChoiceItemButton:active { transform: scale(var(--lf-press-scale)) !important; transition-duration: .08s !important; }
+/* Verre du bouton un peu plus lumineux que la barre du haut (fond d'image plus chargé) */
+.editorsChoiceItemBanner > div > .editorsChoiceItemButton {
+  background: linear-gradient(135deg, rgba(255, 255, 255, .2) 0%, rgba(255, 255, 255, .05) 45%, rgba(255, 255, 255, 0) 100%), rgba(18, 18, 22, .3) !important;
+  border-color: rgba(255, 255, 255, .16) !important;
+}
+.editorsChoiceScrollButtonsContainer { z-index: 5 !important; }
+/* Flèches et pause : ronds en verre, en bas à droite */
+.editorsChoiceScrollButtonsContainer { mix-blend-mode: normal !important; top: auto !important; bottom: calc(var(--lf-hero-h) * .2) !important; right: 4.5vw !important; width: auto !important; }
+.editorsChoiceContainer .emby-scrollbuttons-button {
+  width: 40px !important; height: 40px !important; padding: 0 !important; margin-left: 8px !important;
+  display: inline-flex !important; align-items: center; justify-content: center; border-radius: 50% !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .2) 0%, rgba(255, 255, 255, .05) 45%, rgba(255, 255, 255, 0) 100%), rgba(18, 18, 22, .3) !important;
+  backdrop-filter: blur(16px) saturate(150%); -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, .18) !important; color: #fff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 4px 14px rgba(0, 0, 0, .35) !important;
+  transition: transform .25s, box-shadow .25s, border-color .25s !important;
+}
+@media (hover: hover) {
+  .editorsChoiceContainer .emby-scrollbuttons-button:hover { transform: scale(1.08); border-color: rgba(var(--lf-accent), .6) !important; box-shadow: 0 0 14px rgba(var(--lf-accent), .55) !important; }
+}
+
+/* ---------- Titres de section : style Netflix ---------- */
+/* Variantes gardées de côté :
+   - Netflix une taille en dessous : font-size 1.4rem (reste identique)
+   - Éditorial avec trait sans halo : font-size 1rem; font-weight 600; uppercase; letter-spacing .14em;
+     color rgba(255,255,255,.88); ::before trait 4px x 1.05em, rgb(var(--lf-accent)), border-radius 999px, margin-right .7em */
+.sectionTitle-cards { font-size: 1.6rem !important; font-weight: 800 !important; letter-spacing: -.01em; color: #fff; text-shadow: 0 2px 12px rgba(0, 0, 0, .5); transition: color .25s, text-shadow .25s; }
+@media (hover: hover) { a:hover > .sectionTitle-cards { color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 12px rgba(var(--lf-accent), .6); } }
+
+/* ---------- Flèches des rangées : minimal ---------- */
+.emby-scrollbuttons:not(.splide__arrows) .emby-scrollbuttons-button { background: none !important; border: 0 !important; box-shadow: none !important; color: rgba(255, 255, 255, .75) !important; transition: color .25s, transform .25s, opacity .25s, text-shadow .25s !important; }
+.emby-scrollbuttons:not(.splide__arrows) .emby-scrollbuttons-button[disabled] { opacity: .25; }
+@media (hover: hover) { .emby-scrollbuttons:not(.splide__arrows) .emby-scrollbuttons-button:not([disabled]):hover { color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .7); transform: scale(1.15); } }
+
+/* ---------- Tuiles sans image : nuit + lueur d'accent ---------- */
+.defaultCardBackground { background: radial-gradient(ellipse at 30% 20%, rgba(var(--lf-accent), .45) 0%, transparent 60%), linear-gradient(160deg, color-mix(in srgb, rgb(var(--lf-accent)) 30%, #0b0d14) 0%, #0a0b10 100%) !important; }
+.defaultCardBackground .cardImageIcon { color: rgba(255, 255, 255, .85) !important; filter: drop-shadow(0 0 10px rgba(var(--lf-accent), .7)); }
+
+/* ---------- Apparition : rangées qui montent + films de gauche à droite ---------- */
+@keyframes lfRowIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes lfCardIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+.homeSectionsContainer > .verticalSection { animation: lfRowIn 1s cubic-bezier(.16, 1, .3, 1) both; }
+.homeSectionsContainer > .verticalSection:nth-child(2) { animation-delay: 0.00s; }
+.homeSectionsContainer > .verticalSection:nth-child(3) { animation-delay: 0.10s; }
+.homeSectionsContainer > .verticalSection:nth-child(4) { animation-delay: 0.20s; }
+.homeSectionsContainer > .verticalSection:nth-child(5) { animation-delay: 0.30s; }
+.homeSectionsContainer > .verticalSection:nth-child(6) { animation-delay: 0.40s; }
+.homeSectionsContainer > .verticalSection:nth-child(7) { animation-delay: 0.50s; }
+.homeSectionsContainer > .verticalSection:nth-child(8) { animation-delay: 0.60s; }
+.homeSectionsContainer > .verticalSection:nth-child(9) { animation-delay: 0.70s; }
+.homeSectionsContainer > .verticalSection:nth-child(10) { animation-delay: 0.80s; }
+.homeSectionsContainer > .verticalSection:nth-child(11) { animation-delay: 0.90s; }
+.homeSectionsContainer .itemsContainer > .card { animation: lfCardIn .8s cubic-bezier(.16, 1, .3, 1) both; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(1) { animation-delay: 0.15s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(2) { animation-delay: 0.21s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(3) { animation-delay: 0.27s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(4) { animation-delay: 0.33s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(5) { animation-delay: 0.39s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(6) { animation-delay: 0.45s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(7) { animation-delay: 0.51s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(8) { animation-delay: 0.57s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(9) { animation-delay: 0.63s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(10) { animation-delay: 0.69s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(11) { animation-delay: 0.75s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(12) { animation-delay: 0.81s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(13) { animation-delay: 0.87s; }
+.homeSectionsContainer .itemsContainer > .card:nth-child(14) { animation-delay: 0.93s; }
+.homeSectionsContainer .editorsChoiceContainer .card { animation: none; }
+
+/* ---------- Petits détails : défilement, sélection, cases à cocher ---------- */
+body { accent-color: rgb(var(--lf-accent)); }
+::selection { background: rgba(var(--lf-accent), .45); color: #fff; }
+* { scrollbar-width: thin; scrollbar-color: rgba(var(--lf-accent), .55) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(var(--lf-accent), .5); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(var(--lf-accent), .8); }
+
+/* ---------- Écran des profils (connexion) : style Netflix ---------- */
+#loginPage {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 50% 0%, color-mix(in srgb, rgb(var(--lf-accent)) 28%, transparent) 0%, transparent 60%),
+    linear-gradient(180deg, color-mix(in srgb, rgb(var(--lf-accent)) 18%, #05060a) 0%, #07080c 75%) !important;
+}
+#loginPage > div {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  min-height: 100vh; margin: 0 auto !important; padding-top: 6vh !important;
+}
+#loginPage .visualLoginForm { display: flex; flex-direction: column; align-items: center; }
+/* "Merci de vous identifier" remplacé par "Qui regarde ?" */
+#loginPage .visualLoginForm h1 { font-size: 0 !important; margin: 0 0 56px !important; text-align: center; }
+#loginPage .visualLoginForm h1::after {
+  content: "Qui regarde ?"; font-size: clamp(2rem, 3.4vw, 3rem); font-weight: 800; letter-spacing: -.01em;
+  color: #fff; text-shadow: 0 4px 24px rgba(0, 0, 0, .5);
+}
+#loginPage #divUsers { display: flex !important; flex-wrap: wrap; justify-content: center; gap: 64px !important; }
+#loginPage #divUsers .card { width: auto !important; padding: 0 !important; margin: 0 !important; background: none; border: 0; animation: lfCardIn .8s cubic-bezier(.16, 1, .3, 1) both; }
+#loginPage #divUsers .card:nth-child(2) { animation-delay: .08s; }
+#loginPage #divUsers .card:nth-child(3) { animation-delay: .16s; }
+#loginPage #divUsers .card:nth-child(4) { animation-delay: .24s; }
+#loginPage #divUsers .card:nth-child(5) { animation-delay: .32s; }
+#loginPage #divUsers .card:nth-child(6) { animation-delay: .4s; }
+#loginPage #divUsers .cardBox { width: 150px !important; padding: 0 !important; margin: 0 !important; position: relative; }
+/* Avatars en carré arrondi (rond : 50%) */
+#loginPage #divUsers :is(.cardScalable, .cardPadder, .cardContent, .cardImageContainer) { border-radius: var(--lf-av-r, 24%) !important; }
+#loginPage #divUsers .cardScalable { box-shadow: 0 0 0 1px rgba(255, 255, 255, .1), 0 10px 28px rgba(0, 0, 0, .6); }
+/* Prénoms (le thème masque les titres ailleurs : on les remet ici) */
+#loginPage #divUsers .cardFooter { display: block !important; margin-top: 14px; padding: 0 !important; }
+#loginPage #divUsers .cardText {
+  display: block !important; font-size: 1.2rem !important; font-weight: 600 !important; letter-spacing: -.005em;
+  color: rgba(255, 255, 255, .6) !important; transition: color .3s;
+}
+@media (hover: hover) {
+  #loginPage #divUsers .card:hover .cardText { color: #fff !important; }
+  #loginPage #divUsers .card:hover .cardBox { transform: translateY(-4px) scale(1.06) !important; }
+  #loginPage #divUsers .card:hover .cardScalable {
+    box-shadow: 0 0 0 3px rgba(var(--lf-accent), .9), 0 0 22px rgba(var(--lf-accent), .6), 0 0 46px rgba(var(--lf-accent), .3) !important;
+  }
+}
+/* Boutons de connexion : capsules en verre, les unes sous les autres, en bas de l'écran */
+#loginPage .readOnlyContent {
+  position: fixed; left: 0; right: 0; bottom: 5vh; margin: 0 !important; width: auto !important; max-width: none !important;
+  display: flex !important; flex-direction: column; align-items: center; gap: 10px;
+}
+#loginPage .readOnlyContent > button {
+  width: auto !important; min-width: 240px; margin: 0 !important; padding: 8px 18px !important;
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; border-radius: 999px !important; color: rgba(255, 255, 255, .75) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .12) 0%, rgba(255, 255, 255, 0) 100%), rgba(18, 18, 22, .25) !important;
+  border: 1px solid rgba(255, 255, 255, .1) !important; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  transition: color .25s, border-color .25s, box-shadow .25s, transform .25s;
+}
+@media (hover: hover) {
+  #loginPage .readOnlyContent > button:hover { color: rgb(var(--lf-accent)) !important; border-color: rgba(var(--lf-accent), .5) !important; box-shadow: 0 0 12px rgba(var(--lf-accent), .45); transform: scale(1.04); }
+}
+
+/* ---------- Écran des profils : variante "empilé à gauche" (gardée de côté) ----------
+   Inactive par défaut. S'active avec l'attribut html[data-lf-login="left"]
+   (prévu pour un futur réglage dans le menu Thème). */
+html[data-lf-login="left"] #loginPage > div { align-items: flex-start; padding-left: 7vw !important; padding-top: 1vh !important; }
+html[data-lf-login="left"] #loginPage .visualLoginForm,
+html[data-lf-login="left"] #loginPage #divUsers { padding: 0 !important; margin-left: 0 !important; margin-right: 0 !important; width: auto !important; align-self: flex-start; align-items: flex-start; }
+html[data-lf-login="left"] #loginPage .visualLoginForm h1 { text-align: left; margin-bottom: 52px !important; }
+html[data-lf-login="left"] #loginPage .visualLoginForm h1::after { font-size: clamp(1.5rem, 2.2vw, 2rem); }
+html[data-lf-login="left"] #loginPage #divUsers { flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; gap: 48px !important; }
+html[data-lf-login="left"] #loginPage #divUsers .cardBox { width: 110px !important; transform-origin: left center; transition: transform .45s cubic-bezier(.16, 1, .3, 1) !important; }
+html[data-lf-login="left"] #loginPage #divUsers .card:hover { z-index: 5; position: relative; }
+html[data-lf-login="left"] #loginPage #divUsers .cardFooter {
+  position: absolute; left: 100%; top: 50%; margin: 0 !important; transform: translate(6px, -50%); opacity: 0; white-space: nowrap; pointer-events: none;
+  transition: opacity .25s, transform .35s cubic-bezier(.16, 1, .3, 1);
+}
+html[data-lf-login="left"] #loginPage #divUsers .cardText { text-align: left !important; color: #fff !important; font-size: 1.05rem !important; }
+@media (hover: hover) {
+  html[data-lf-login="left"] #loginPage #divUsers .card:hover .cardBox { transform: scale(1.35) !important; }
+  html[data-lf-login="left"] #loginPage #divUsers .card:hover .cardFooter { opacity: 1; transform: translate(26px, -50%); }
+}
+html[data-lf-login="left"] #loginPage .readOnlyContent { left: 7vw; right: auto; flex-direction: row; }
+
+/* ---------- Formulaire de connexion (mot de passe) : carte en verre ---------- */
+#loginPage > div:has(> .manualLoginForm:not(.hide)) { justify-content: center; padding-top: 0 !important; }
+#loginPage .manualLoginForm {
+  width: min(380px, 90vw) !important; padding: 34px 34px 28px !important; border-radius: 24px; box-sizing: border-box;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .1) 0%, rgba(255, 255, 255, 0) 60%), rgba(16, 17, 22, .55);
+  backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, .1); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 24px 60px rgba(0, 0, 0, .55);
+  animation: lfRowIn .8s cubic-bezier(.16, 1, .3, 1) both;
+}
+#loginPage .manualLoginForm > div:first-child { padding: 0 !important; margin-bottom: 22px; justify-content: center; }
+#loginPage .manualLoginForm h1.sectionTitle { font-size: 0 !important; margin: 0 !important; text-align: center; width: 100%; }
+#loginPage .manualLoginForm h1.sectionTitle::after { content: "Connexion"; font-size: 1.9rem; font-weight: 800; letter-spacing: -.01em; color: #fff; }
+#loginPage .manualLoginForm .inputContainer { margin-bottom: 16px !important; }
+#loginPage .manualLoginForm .inputLabel { font-size: .7rem !important; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: rgba(255, 255, 255, .55) !important; margin-bottom: 6px; }
+#loginPage .manualLoginForm .emby-input {
+  border-radius: 12px !important; padding: 11px 14px !important; background: rgba(0, 0, 0, .28) !important;
+  border: 1px solid rgba(255, 255, 255, .1) !important; color: #fff !important; transition: border-color .25s, box-shadow .25s, background .25s;
+}
+#loginPage .manualLoginForm .emby-input:focus { outline: none !important; border-color: rgba(var(--lf-accent), .7) !important; box-shadow: 0 0 0 3px rgba(var(--lf-accent), .2), 0 0 16px rgba(var(--lf-accent), .25) !important; background: rgba(0, 0, 0, .38) !important; }
+#loginPage .manualLoginForm .inputContainer:focus-within .inputLabel { color: rgb(var(--lf-accent)) !important; }
+#loginPage .manualLoginForm .checkboxContainer { margin: 4px 0 22px !important; }
+#loginPage .manualLoginForm .checkboxLabel { color: rgba(255, 255, 255, .75) !important; font-size: .85rem; }
+#loginPage .manualLoginForm .checkboxOutline { border-radius: 7px !important; border-color: rgba(255, 255, 255, .3) !important; }
+#loginPage .manualLoginForm .emby-checkbox:checked + span + .checkboxOutline { background: rgb(var(--lf-accent)) !important; border-color: rgb(var(--lf-accent)) !important; box-shadow: 0 0 10px rgba(var(--lf-accent), .5); }
+#loginPage .manualLoginForm .checkboxIcon { color: #fff !important; }
+#loginPage .manualLoginForm button.button-submit {
+  border-radius: 999px !important; margin: 0 0 10px !important; padding: 12px !important; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; color: #fff !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .22) 0%, rgba(255, 255, 255, 0) 60%), rgb(var(--lf-accent)) !important;
+  border: 1px solid rgba(255, 255, 255, .18) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 6px 18px rgba(var(--lf-accent), .35) !important;
+  transition: transform .25s, box-shadow .25s !important;
+}
+@media (hover: hover) { #loginPage .manualLoginForm button.button-submit:hover { transform: scale(1.03); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 0 18px rgba(var(--lf-accent), .7), 0 0 36px rgba(var(--lf-accent), .3) !important; } }
+#loginPage .manualLoginForm button.btnCancel {
+  border-radius: 999px !important; margin: 0 !important; padding: 11px !important; text-transform: uppercase; letter-spacing: .08em; font-size: .8rem;
+  color: rgba(255, 255, 255, .65) !important; background: transparent !important; border: 1px solid rgba(255, 255, 255, .12) !important; transition: color .25s, border-color .25s !important;
+}
+@media (hover: hover) { #loginPage .manualLoginForm button.btnCancel:hover { color: #fff !important; border-color: rgba(255, 255, 255, .3) !important; } }
+
+/* ==========================================================
+   Pages bibliothèque (Films, Séries… : grille, Suggestions, Genres, Collections…)
+   ========================================================== */
+/* Fond derrière la barre du haut (dégradé doux), seulement sur ces pages */
+header.MuiAppBar-root:has(.MuiTypography-h2)::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; bottom: -40px; z-index: -1; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(6, 7, 11, .8) 0%, rgba(6, 7, 11, .45) 50%, rgba(6, 7, 11, 0) 100%);
+}
+/* Titre de la vue ("Films ▾", "Suggestions ▾"…) */
+header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) > button.MuiButton-root:first-child { border-radius: 999px !important; padding: 4px 10px 4px 4px !important; transition: color .25s !important; }
+header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) > button.MuiButton-root:first-child .MuiTypography-root { font-size: 1.6rem !important; font-weight: 800 !important; letter-spacing: -.01em; color: #fff; }
+header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) > button.MuiButton-root:first-child .MuiButton-endIcon { color: rgba(255, 255, 255, .6); transition: transform .25s, color .25s; }
+@media (hover: hover) {
+  header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) > button.MuiButton-root:first-child:hover { background: none !important; }
+  header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) > button.MuiButton-root:first-child:hover .MuiTypography-root { color: rgb(var(--lf-accent)); text-shadow: 0 0 12px rgba(var(--lf-accent), .5); }
+  header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) > button.MuiButton-root:first-child:hover .MuiButton-endIcon { color: rgb(var(--lf-accent)); transform: translateY(2px); }
+}
+/* Compteur */
+header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiChip-root { height: 24px !important; border-radius: 999px !important; background: rgba(255, 255, 255, .08) !important; border: 1px solid rgba(255, 255, 255, .1); color: rgba(255, 255, 255, .7) !important; font-size: .75rem; }
+/* Tout lire / aléatoire : minimal */
+header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-contained { box-shadow: none !important; gap: 8px; }
+header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-contained > .MuiButton-root {
+  border-radius: 999px !important; color: #fff !important; text-transform: uppercase; letter-spacing: .06em; font-size: .75rem;
+  background: none !important; border: 1px solid transparent !important; box-shadow: none !important; transition: transform .25s, color .25s !important;
+}
+@media (hover: hover) { header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-contained > .MuiButton-root:hover { transform: scale(1.05); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .6); } }
+/* Filtre / tri / affichage / pages : icônes minimales */
+header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-text > .MuiButton-root { color: rgba(255, 255, 255, .75) !important; border: 0 !important; min-width: 36px !important; transition: color .25s, transform .25s !important; }
+@media (hover: hover) {
+  header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-text > .MuiButton-root:hover { background: none !important; color: rgb(var(--lf-accent)) !important; transform: scale(1.12); }
+  header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-text > .MuiButton-root:hover svg { filter: drop-shadow(0 0 6px rgba(var(--lf-accent), .7)); }
+}
+header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-text > .MuiButton-root.Mui-disabled { opacity: .25; }
+header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiBadge-dot { background: rgb(var(--lf-accent)) !important; box-shadow: 0 0 6px rgba(var(--lf-accent), .8); }
+/* Alphabet à droite */
+.alphaPicker-fixed-right .MuiPaper-root { background: none !important; box-shadow: none !important; }
+.alphaPicker-fixed-right .MuiToggleButton-root { border: 0 !important; color: rgba(255, 255, 255, .45) !important; font-size: .68rem !important; font-weight: 600; padding: 2px 4px !important; border-radius: 6px !important; transition: color .2s, transform .2s !important; }
+@media (hover: hover) { .alphaPicker-fixed-right .MuiToggleButton-root:hover { background: none !important; color: #fff !important; transform: scale(1.25); } }
+.alphaPicker-fixed-right .MuiToggleButton-root.Mui-selected { background: none !important; color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 8px rgba(var(--lf-accent), .7); transform: scale(1.25); }
+/* Grille : aérée, apparition en vague */
+.itemsContainer.vertical-wrap > .card .cardBox { margin: .9em !important; }
+.itemsContainer.vertical-wrap > .card { animation: lfRowIn .7s cubic-bezier(.16, 1, .3, 1) both; }
+.itemsContainer.vertical-wrap > .card:nth-child(1) { animation-delay: 0.000s; }
+.itemsContainer.vertical-wrap > .card:nth-child(2) { animation-delay: 0.035s; }
+.itemsContainer.vertical-wrap > .card:nth-child(3) { animation-delay: 0.070s; }
+.itemsContainer.vertical-wrap > .card:nth-child(4) { animation-delay: 0.105s; }
+.itemsContainer.vertical-wrap > .card:nth-child(5) { animation-delay: 0.140s; }
+.itemsContainer.vertical-wrap > .card:nth-child(6) { animation-delay: 0.175s; }
+.itemsContainer.vertical-wrap > .card:nth-child(7) { animation-delay: 0.210s; }
+.itemsContainer.vertical-wrap > .card:nth-child(8) { animation-delay: 0.245s; }
+.itemsContainer.vertical-wrap > .card:nth-child(9) { animation-delay: 0.280s; }
+.itemsContainer.vertical-wrap > .card:nth-child(10) { animation-delay: 0.315s; }
+.itemsContainer.vertical-wrap > .card:nth-child(11) { animation-delay: 0.350s; }
+.itemsContainer.vertical-wrap > .card:nth-child(12) { animation-delay: 0.385s; }
+.itemsContainer.vertical-wrap > .card:nth-child(13) { animation-delay: 0.420s; }
+.itemsContainer.vertical-wrap > .card:nth-child(14) { animation-delay: 0.455s; }
+.itemsContainer.vertical-wrap > .card:nth-child(15) { animation-delay: 0.490s; }
+.itemsContainer.vertical-wrap > .card:nth-child(16) { animation-delay: 0.525s; }
+.itemsContainer.vertical-wrap > .card:nth-child(17) { animation-delay: 0.560s; }
+.itemsContainer.vertical-wrap > .card:nth-child(18) { animation-delay: 0.595s; }
+.itemsContainer.vertical-wrap > .card:nth-child(19) { animation-delay: 0.630s; }
+.itemsContainer.vertical-wrap > .card:nth-child(20) { animation-delay: 0.665s; }
+.itemsContainer.vertical-wrap > .card:nth-child(21) { animation-delay: 0.700s; }
+.itemsContainer.vertical-wrap > .card:nth-child(22) { animation-delay: 0.735s; }
+.itemsContainer.vertical-wrap > .card:nth-child(23) { animation-delay: 0.770s; }
+.itemsContainer.vertical-wrap > .card:nth-child(24) { animation-delay: 0.805s; }
+.itemsContainer.vertical-wrap > .card:nth-child(25) { animation-delay: 0.840s; }
+.itemsContainer.vertical-wrap > .card:nth-child(26) { animation-delay: 0.875s; }
+.itemsContainer.vertical-wrap > .card:nth-child(27) { animation-delay: 0.910s; }
+.itemsContainer.vertical-wrap > .card:nth-child(28) { animation-delay: 0.945s; }
+.itemsContainer.vertical-wrap > .card:nth-child(29) { animation-delay: 0.980s; }
+.itemsContainer.vertical-wrap > .card:nth-child(30) { animation-delay: 1.015s; }
+/* Vues en rangées (Suggestions, Genres) : même apparition que l'accueil */
+.libraryPage > .verticalSection { animation: lfRowIn 1s cubic-bezier(.16, 1, .3, 1) both; }
+.libraryPage > .verticalSection:nth-child(1) { animation-delay: 0.00s; }
+.libraryPage > .verticalSection:nth-child(2) { animation-delay: 0.10s; }
+.libraryPage > .verticalSection:nth-child(3) { animation-delay: 0.20s; }
+.libraryPage > .verticalSection:nth-child(4) { animation-delay: 0.30s; }
+.libraryPage > .verticalSection:nth-child(5) { animation-delay: 0.40s; }
+.libraryPage > .verticalSection:nth-child(6) { animation-delay: 0.50s; }
+.libraryPage > .verticalSection:nth-child(7) { animation-delay: 0.60s; }
+.libraryPage > .verticalSection:nth-child(8) { animation-delay: 0.70s; }
+.libraryPage > .verticalSection:nth-child(9) { animation-delay: 0.80s; }
+.libraryPage > .verticalSection:nth-child(10) { animation-delay: 0.90s; }
+.libraryPage .verticalSection .itemsContainer > .card { animation: lfCardIn .8s cubic-bezier(.16, 1, .3, 1) both; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(1) { animation-delay: 0.15s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(2) { animation-delay: 0.21s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(3) { animation-delay: 0.27s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(4) { animation-delay: 0.33s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(5) { animation-delay: 0.39s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(6) { animation-delay: 0.45s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(7) { animation-delay: 0.51s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(8) { animation-delay: 0.57s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(9) { animation-delay: 0.63s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(10) { animation-delay: 0.69s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(11) { animation-delay: 0.75s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(12) { animation-delay: 0.81s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(13) { animation-delay: 0.87s; }
+.libraryPage .verticalSection .itemsContainer > .card:nth-child(14) { animation-delay: 0.93s; }
+/* Barre de progression des bibliothèques (composant MUI) : même rendu que l'accueil */
+.itemLinearProgress.MuiLinearProgress-root {
+  position: absolute !important; left: var(--lf-prog-side) !important; right: var(--lf-prog-side) !important; bottom: 10px !important;
+  width: auto !important; height: var(--lf-prog-h) !important; z-index: 6; pointer-events: none;
+  border-radius: 999px !important; overflow: hidden !important; background: rgba(255, 255, 255, .18) !important;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14) !important;
+  filter: drop-shadow(0 0 4px rgba(var(--lf-accent-alt), .55)) drop-shadow(0 3px 6px rgba(0, 0, 0, .55));
+}
+.itemLinearProgress .MuiLinearProgress-bar {
+  border-radius: 999px !important; filter: saturate(1.3);
+  background: linear-gradient(90deg, rgb(var(--lf-accent-alt)) 0%, color-mix(in srgb, rgb(var(--lf-accent-alt)) var(--lf-pg-end), #fff) 100%) !important;
+}
+
+/* ---------- Police et taille du texte ---------- */
+html { font-size: 96% !important; } /* +3 % */
+body, body :is(button, input, select, textarea, h1, h2, h3, h4, .MuiTypography-root) { font-family: 'DM Sans', 'Noto Sans', sans-serif !important; }
+
+/* ==========================================================
+   Fiche d'un film / d'une série (mode Netflix, grand visuel)
+   ========================================================== */
+/* Image de fond plus visible sur la fiche, fondu vers le bas */
+body:has(#itemDetailPage:not(.hide)) .backgroundContainer.withBackdrop {
+  background:
+    linear-gradient(to right, rgba(5, 6, 10, .7) 0%, rgba(5, 6, 10, .25) 45%, transparent 70%),
+    linear-gradient(to top, rgba(7, 8, 12, 1) 0%, rgba(7, 8, 12, .6) 35%, transparent 65%) !important;
+}
+#itemDetailPage #itemBackdrop { height: 82vh !important; }
+#itemDetailPage .detailImageContainer { display: none !important; } /* pas d'affiche : tout sur l'image */
+#itemDetailPage .detailLogo {
+  left: 4.5vw !important; right: auto !important; top: 22vh !important; width: min(460px, 38vw) !important; height: 18vh !important;
+  background-position: left bottom !important; filter: drop-shadow(0 4px 18px rgba(0, 0, 0, .6));
+}
+#itemDetailPage:has(.detailLogo:not(.hide)) .nameContainer h1.itemName { display: none !important; } /* le logo remplace le titre */
+#itemDetailPage .detailPageWrapperContainer {
+  margin-top: -32vh !important; position: relative; z-index: 1;
+  background: linear-gradient(to bottom, rgba(7, 8, 12, 0) 0%, rgba(7, 8, 12, 0) 24vh, rgba(7, 8, 12, .9) 40vh, #07080c 50vh) !important;
+}
+#itemDetailPage .detailRibbon { background: none !important; display: flex !important; flex-direction: column; flex-wrap: nowrap !important; align-items: flex-start !important; align-content: flex-start !important; height: auto !important; }
+#itemDetailPage .detailRibbon, #itemDetailPage .detailPagePrimaryContent { padding-left: 4.5vw !important; }
+#itemDetailPage .detailRibbon, #itemDetailPage .detailSectionContent { text-shadow: 0 1px 3px rgba(0, 0, 0, .85); }
+#itemDetailPage .infoWrapper { width: auto !important; max-width: 900px; }
+#itemDetailPage .itemName.infoText { font-weight: 800 !important; letter-spacing: -.01em; }
+#itemDetailPage h1.itemName { font-size: 2.1rem !important; }
+#itemDetailPage h4.originalTitle { font-size: 1.45rem !important; font-style: italic; font-weight: 400 !important; color: rgba(255, 255, 255, .7) !important; margin-top: 2px !important; }
+#itemDetailPage .itemMiscInfo-primary { color: rgba(255, 255, 255, .75); }
+#itemDetailPage .mediaInfoOfficialRating { border-radius: 6px !important; border: 1px solid rgba(255, 255, 255, .3) !important; padding: 1px 7px !important; font-size: .75rem; }
+#itemDetailPage .starIcon { color: rgb(var(--lf-accent)) !important; }
+
+/* Boutons : Lecture en capsule de verre (comme "Regarder"), les autres en icônes épurées */
+#itemDetailPage .mainDetailButtons { order: 2; justify-content: flex-start !important; margin: 18px 0 0 !important; flex-wrap: wrap; gap: 6px !important; align-items: center; }
+#itemDetailPage .mainDetailButtons .detailButton {
+  width: 40px !important; height: 44px !important; min-width: 0 !important; padding: 0 !important; margin: 0 !important; border-radius: 50% !important;
+  display: inline-flex !important; align-items: center; justify-content: center; background: none !important; border: 1px solid transparent !important;
+  color: rgba(255, 255, 255, .8) !important; transition: transform .25s, color .25s, text-shadow .25s !important;
+}
+#itemDetailPage .mainDetailButtons .detailButton .detailButton-content { margin: 0 !important; }
+#itemDetailPage .mainDetailButtons .detailButton-icon { font-size: 22px !important; }
+@media (hover: hover) { #itemDetailPage .mainDetailButtons .detailButton:not(.btnPlay):hover { transform: scale(1.1); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .7); } }
+#itemDetailPage .mainDetailButtons .btnPlay {
+  width: auto !important; height: auto !important; padding: 11px 26px 11px 18px !important; border-radius: 999px !important; gap: 8px;
+  flex-direction: row !important; align-items: center !important; line-height: 1 !important; color: #fff !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .2) 0%, rgba(255, 255, 255, .05) 45%, rgba(255, 255, 255, 0) 100%), rgba(18, 18, 22, .3) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important; -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  border: 1px solid rgba(255, 255, 255, .16) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 4px 14px rgba(0, 0, 0, .35) !important;
+  transition: transform .3s var(--lf-ease), border-color .3s, box-shadow .3s, color .3s, text-shadow .3s !important;
+}
+#itemDetailPage .mainDetailButtons .btnPlay .detailButton-content { display: inline-flex !important; align-items: center; height: 22px; }
+#itemDetailPage .mainDetailButtons .btnPlay::after { content: "Lecture"; display: inline-block; line-height: 1; padding-top: 1px; font-size: .82rem; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+#itemDetailPage .mainDetailButtons .btnPlay[title="Reprendre"]::after { content: "Reprendre"; }
+@media (hover: hover) {
+  #itemDetailPage .mainDetailButtons .btnPlay:hover {
+    transform: scale(var(--lf-btn-scale)); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .8);
+    border-color: rgba(var(--lf-accent), var(--lf-edge-a)) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .24), var(--lf-halo), 0 8px 22px rgba(0, 0, 0, .5) !important;
+  }
+}
+/* Boutons masqués : Télécharger (déjà dans "…") ; sur un film, ceux réservés aux séries */
+#itemDetailPage .mainDetailButtons .btnDownload { display: none !important; }
+#itemDetailPage:not(:has(#childrenCollapsible:not(.hide))) .mainDetailButtons :is(.btnShuffle, .btnInstantMix, .btnSplitVersions, .btnCancelSeriesTimer, .btnCancelTimer) { display: none !important; }
+
+/* Vidéo / audio / sous-titres : compact, au-dessus du résumé */
+#itemDetailPage .detailSection { display: flex !important; flex-direction: column; max-width: none !important; }
+#itemDetailPage .trackSelections { order: 0; margin-top: 2px !important; margin-bottom: 18px !important; max-width: 480px; } /* + 18 px de Jellyfin = 20 px visibles sous les boutons */
+#itemDetailPage .detailSectionContent { order: 1; }
+#itemDetailPage .itemDetailsGroup { order: 3; }
+#itemDetailPage .trackSelectionFieldContainer { margin-bottom: 4px !important; }
+#itemDetailPage .selectLabel { color: rgba(255, 255, 255, .5) !important; font-size: .62rem !important; min-width: 76px; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+#itemDetailPage .detailTrackSelect { font-size: .78rem !important; padding: 2px 8px !important; border-radius: 8px !important; background: rgba(0, 0, 0, .28) !important; border: 1px solid rgba(255, 255, 255, .1) !important; transition: border-color .25s; }
+#itemDetailPage .detailTrackSelect:hover, #itemDetailPage .detailTrackSelect:focus { border-color: rgba(var(--lf-accent), .6) !important; }
+
+/* Textes */
+#itemDetailPage .tagline { font-style: italic; color: rgba(255, 255, 255, .8) !important; }
+#itemDetailPage .overview { color: rgba(255, 255, 255, .82) !important; line-height: 1.6; max-width: min(980px, 62vw) !important; }
+#itemDetailPage .overview-controls { max-width: min(980px, 62vw) !important; display: flex !important; justify-content: flex-end; }
+#itemDetailPage .overview-controls button { color: rgb(var(--lf-accent)) !important; text-transform: uppercase; font-size: .72rem; letter-spacing: .08em; font-weight: 600; padding: 4px 0 !important; background: none !important; }
+#itemDetailPage .itemTags { display: none !important; } /* étiquettes masquées */
+#itemDetailPage .detailsGroupItem .label { color: rgba(255, 255, 255, .45) !important; }
+#itemDetailPage .itemDetailsGroup a, #itemDetailPage .itemGenres a { color: rgba(255, 255, 255, .85) !important; transition: color .2s; }
+#itemDetailPage .itemDetailsGroup a:hover { color: rgb(var(--lf-accent)) !important; }
+
+/* Rangées du bas : titres visibles, distribution tout en bas en petits ronds */
+#itemDetailPage .cardText { font-size: .85rem; color: rgba(255, 255, 255, .85); }
+#itemDetailPage .cardText-secondary { color: rgba(255, 255, 255, .5) !important; }
+#itemDetailPage .detailPageSecondaryContainer { display: flex !important; flex-direction: column; }
+#itemDetailPage #similarCollapsible { margin-top: 30px !important; }
+#itemDetailPage #castCollapsible { order: 20 !important; }
+#itemDetailPage .personCard { width: 112px !important; }
+#itemDetailPage .personCard .cardBox { margin: .6em !important; }
+#itemDetailPage .personCard :is(.cardScalable, .cardContent, .cardImageContainer, .cardPadder, .cardOverlayContainer, .blurhash-canvas) { border-radius: 50% !important; }
+#itemDetailPage .personCard .cardPadder { padding-bottom: 100% !important; }
+#itemDetailPage .personCard .cardText { text-align: center; font-size: .75rem !important; }
+#itemDetailPage .personCard .cardOverlayButton-br, #itemDetailPage .personCard .cardOverlayButton { display: none !important; }
+
+/* ==========================================================
+   Boîtes de dialogue, menus "…", éditeurs
+   ========================================================== */
+.dialog .cardFooter, .visualCardBox .cardFooter, .dialog .cardBox > .cardText { display: block !important; }
+.dialogContainer .dialog:not(.actionSheet) { background: linear-gradient(180deg, color-mix(in srgb, rgb(var(--lf-accent)) 8%, #0c0d12) 0%, #08090d 100%) !important; color: #fff; }
+.dialogContainer .dialog-fixedSize:not(.dialog-fullscreen), .dialogContainer .centeredDialog:not(.actionSheet) { border-radius: 22px !important; border: 1px solid rgba(255, 255, 255, .08); box-shadow: 0 30px 80px rgba(0, 0, 0, .6) !important; overflow: hidden; }
+.dialog .formDialogHeader { background: transparent !important; border-bottom: 1px solid rgba(255, 255, 255, .07); box-shadow: none !important; }
+.dialog .formDialogHeaderTitle { font-weight: 700; font-size: 1.15rem; }
+.dialog .formDialogHeader .btnCancel { color: rgba(255, 255, 255, .75) !important; transition: color .2s, transform .2s; }
+.dialog .formDialogHeader .btnCancel:hover { color: rgb(var(--lf-accent)) !important; transform: translateX(-2px); }
+.dialog h2 { font-weight: 700; }
+/* Petits boutons (recherche, +…) : épurés, comme les flèches de l'accueil */
+.dialog .fab, .dialog .fab.mini {
+  background: none !important; border: 0 !important; box-shadow: none !important; color: rgba(255, 255, 255, .75) !important;
+  transition: transform .25s, color .25s, text-shadow .25s !important;
+}
+.dialog .fab:hover { transform: scale(1.15); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .7); }
+.visualCardBox { border-radius: 16px !important; background: rgba(255, 255, 255, .04) !important; border: 1px solid rgba(255, 255, 255, .08) !important; overflow: hidden; box-shadow: none !important; }
+.visualCardBox .cardScalable, .visualCardBox .cardImageContainer { border-radius: 15px 15px 0 0 !important; box-shadow: none !important; }
+.visualCardBox .cardFooter { padding: 6px 8px 8px !important; }
+.visualCardBox .cardText { font-size: .78rem; color: rgba(255, 255, 255, .85); }
+.visualCardBox .cardText-secondary { color: rgba(255, 255, 255, .5) !important; }
+.visualCardBox .paper-icon-button-light { color: rgba(255, 255, 255, .7) !important; transition: color .2s, transform .2s; }
+.visualCardBox .paper-icon-button-light:hover { color: rgb(var(--lf-accent)) !important; transform: scale(1.15); text-shadow: 0 0 10px rgba(var(--lf-accent), .7); background: none !important; }
+.dialog :is(.emby-input, .emby-select, .emby-textarea) { border-radius: 10px !important; background: rgba(0, 0, 0, .3) !important; border: 1px solid rgba(255, 255, 255, .1) !important; transition: border-color .25s, box-shadow .25s; }
+.dialog :is(.emby-input, .emby-select, .emby-textarea):focus { border-color: rgba(var(--lf-accent), .7) !important; box-shadow: 0 0 0 3px rgba(var(--lf-accent), .18) !important; outline: none !important; }
+.dialog .inputLabel, .dialog .selectLabel { color: rgba(255, 255, 255, .6) !important; }
+.dialog .raised { border-radius: 999px !important; text-transform: uppercase; letter-spacing: .06em; font-size: .8rem; transition: transform .25s, box-shadow .25s, border-color .25s, color .25s !important; }
+.dialog .raised.button-submit { background: linear-gradient(135deg, rgba(255, 255, 255, .22) 0%, rgba(255, 255, 255, 0) 60%), rgb(var(--lf-accent)) !important; color: #fff !important; border: 1px solid rgba(255, 255, 255, .18) !important; box-shadow: 0 6px 18px rgba(var(--lf-accent), .3) !important; }
+.dialog .raised.button-submit:hover { transform: scale(1.03); box-shadow: 0 0 18px rgba(var(--lf-accent), .6) !important; }
+.dialog .raised:not(.button-submit) { background: transparent !important; border: 1px solid rgba(255, 255, 255, .14) !important; color: rgba(255, 255, 255, .8) !important; }
+.dialog .raised:not(.button-submit):hover { border-color: rgba(255, 255, 255, .3) !important; color: #fff !important; }
+.actionSheet { border-radius: 16px !important; background: rgba(16, 17, 22, .82) !important; backdrop-filter: blur(22px) saturate(150%); -webkit-backdrop-filter: blur(22px) saturate(150%); border: 1px solid rgba(255, 255, 255, .08); box-shadow: 0 18px 50px rgba(0, 0, 0, .55) !important; overflow: hidden; padding: 6px 0; }
+.actionSheet .actionSheetMenuItem { border-radius: 10px !important; margin: 0 6px !important; width: calc(100% - 12px) !important; transition: background .2s, color .2s; }
+.actionSheet .actionSheetMenuItem:hover { background: rgba(var(--lf-accent), .16) !important; color: #fff; }
+.actionSheet .actionSheetMenuItem:hover .actionsheetMenuItemIcon { color: rgb(var(--lf-accent)) !important; }
+.actionSheet .actionsheetDivider { background: rgba(255, 255, 255, .07) !important; margin: 6px 12px !important; }
