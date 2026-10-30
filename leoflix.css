@@ -1,7 +1,9 @@
 /* ==========================================================
-   LeoFlix : thème Jellyfin maison (v0.35)
+   LeoFlix : thème Jellyfin maison (v0.36)
    Base : thème sombre d'origine de Jellyfin 12.4, sans import externe
    Validé : accueil, connexion, bibliothèques, fiche film, fiche série, page saison, lecteur
+   v0.36 : finitions du lecteur (section en fin de fichier). Certaines fonctions demandent
+   le script leoflix.js (plugin JavaScript Injector), voir le README.
    ========================================================== */
 
 /* Police DM Sans (OFL 1.1), version figée, servie par jsDelivr comme ce thème */
@@ -854,10 +856,6 @@ html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButton
   background: linear-gradient(180deg, rgba(5, 6, 10, .8) 0%, rgba(5, 6, 10, 0) 100%) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
   box-shadow: none !important; padding-top: 16px !important; padding-bottom: 40px !important; transition-duration: .2s !important;
 }
-/* Retour + titre en haut : sobres, grands, ombrés ; retour qui glisse au survol */
-.osdHeader .headerBackButton .material-icons { font-size: 30px !important; }
-.osdHeader .pageTitle { font-size: 1.5rem !important; font-weight: 600 !important; }
-.osdHeader :is(.headerBackButton, .pageTitle) { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .75)); }
 /* Retirés : rembobiner, avance rapide, chapitres (boutons + repères), favori, "se terminera à" */
 .videoOsdBottom :is(.btnUserRating, .osdTimeText, .btnRewind, .btnFastForward, .btnPreviousChapter, .btnNextChapter), .videoOsdBottom .sliderMarkerContainer { display: none !important; }
 /* Temps à gauche et à droite */
@@ -895,10 +893,9 @@ html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButton
 .videoOsdBottom .buttons > .volumeButtons { order: 1; margin-left: 8px; }
 .videoOsdBottom .buttons > :is(#popupPreviewButton, .btnSubtitles, .btnAudio, .btnVideoOsdSettings, .btnPip, .btnFullscreen, .btnAirPlay) { order: 2; }
 .videoOsdBottom .buttons > #popupPreviewButton, .videoOsdBottom .buttons:not(:has(> #popupPreviewButton)) > .btnSubtitles { margin-left: auto !important; }
-.videoOsdBottom .buttons button, .osdHeader .headerButton { color: rgba(255, 255, 255, .88) !important; background: none !important; transform-origin: 50% 50% !important; transition: color .25s, transform .25s, filter .25s !important; }
+.videoOsdBottom .buttons button { color: rgba(255, 255, 255, .88) !important; background: none !important; transform-origin: 50% 50% !important; transition: color .25s, transform .25s, filter .25s !important; }
 @media (hover: hover) {
   .videoOsdBottom .buttons button:hover { color: rgb(var(--lf-accent)) !important; transform: scale(1.2) !important; filter: drop-shadow(0 0 5px rgba(var(--lf-accent), .45)); }
-  .osdHeader .headerBackButton:hover { color: rgb(var(--lf-accent)) !important; transform: translateX(-4px) !important; }
 }
 .videoOsdBottom .btnPause { display: inline-flex !important; align-items: center; justify-content: center; }
 .videoOsdBottom .btnPause .material-icons { font-size: 2.5em !important; line-height: 1 !important; }
@@ -922,7 +919,7 @@ body:has(#videoOsdPage:not(.hide)) :is(.actionSheet, #popupFocusContainer) {
   backdrop-filter: blur(28px) saturate(170%) !important; -webkit-backdrop-filter: blur(28px) saturate(170%) !important;
   border: 1px solid rgba(255, 255, 255, .14) !important; border-radius: 18px !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), 0 18px 44px rgba(0, 0, 0, .45) !important;
 }
-body:has(#videoOsdPage:not(.hide)) .actionSheet { animation: none; margin-top: 0 !important; translate: 0 -40px; transform-origin: bottom right; }
+body:has(#videoOsdPage:not(.hide)) .actionSheet { animation: none; margin-top: 0 !important; }
 body:has(#videoOsdPage:not(.hide)) :is(.actionSheet[style*="scaleup"], #popupFocusContainer) { animation: lfOpenB .34s cubic-bezier(.22, 1, .36, 1) both !important; }
 body:has(#videoOsdPage:not(.hide)) .actionSheet[style*="scaledown"] { animation: lfPopOut .2s cubic-bezier(.55, 0, 1, .45) both !important; }
 body:has(#videoOsdPage:not(.hide)) .dialogBackdropOpened { opacity: .15 !important; }
@@ -932,7 +929,7 @@ body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem { animation
 body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem:hover { background: none !important; }
 body:has(#videoOsdPage:not(.hide)) .actionSheet .actionsheetMenuItemIcon { width: 1.3em !important; min-width: 1.3em !important; margin-right: .45em !important; font-size: 1.1em !important; }
 body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem .listItemBody { transition: color .2s, transform .25s var(--lf-ease); }
-@media (hover: hover) { body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem:hover .listItemBody { color: rgb(var(--lf-accent)) !important; transform: translateX(4px); } }
+@media (hover: hover) { body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem:hover .listItemBody { color: rgb(var(--lf-accent)) !important; } }
 /* Qualité : noms compréhensibles (le menu se reconnaît à son choix 420 kbps) */
 .actionSheet:has([data-id="420000"]) .actionSheetMenuItem[data-id] .actionSheetItemText { font-size: 0 !important; height: auto !important; max-height: none !important; overflow: visible !important; display: block !important; }
 .actionSheet:has([data-id="420000"]) .actionSheetMenuItem[data-id] .actionSheetItemText::before { display: inline; font-size: .88rem; line-height: 1.4; }
@@ -980,7 +977,6 @@ body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem .listItemBo
 #popupContentContainer .previewItemTitle { padding-top: 5px !important; padding-bottom: 5px !important; min-height: 0 !important; background: none !important; transform-origin: left center; transition: color .2s, transform .25s var(--lf-ease) !important; }
 #popupFocusContainer #popupContentContainer .previewItemTitle > span { transition: color .2s; }
 @media (hover: hover) {
-  #popupFocusContainer #popupContentContainer .previewItemTitle:hover { transform: scale(1.04) !important; }
   #popupFocusContainer #popupContentContainer .previewItemTitle:hover, #popupFocusContainer #popupContentContainer .previewItemTitle:hover > span, #popupFocusContainer #popupContentContainer .previewItemTitle:hover .actionSheetItemText { color: rgb(var(--lf-accent)) !important; opacity: 1 !important; }
 }
 /* Épisode en cours : titre + résumé (sans vignette ni infos), capsule "En cours" épurée */
@@ -999,3 +995,187 @@ body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem .listItemBo
 #popupContentContainer > .listItem:nth-child(6) { animation-delay: 0.15s; }
 #popupContentContainer > .listItem:nth-child(7) { animation-delay: 0.18s; }
 #popupContentContainer > .listItem:nth-child(8) { animation-delay: 0.21s; }
+
+/* ==========================================================
+   v0.36 : finitions du lecteur
+   Ce qui est marqué [script] ne marche pleinement qu'avec leoflix.js (JavaScript Injector).
+   Notes utiles :
+   - Jellyfin 12 affiche un nouvel en-tête MUI dans le lecteur (.videoOsd-appBar) ;
+     l'ancien (.pageTitle, .headerBackButton) reste caché dans la page.
+   - Firefox (Windows) envoie la vidéo sur un plan à part (overlay) que backdrop-filter voit mal :
+     d'où le léger filtre sur la vidéo quand un élément en verre est affiché par-dessus.
+   - Menus : Jellyfin réécrit left/top en direct après l'ouverture ; on passe donc par
+     bottom !important et une variable (--lf-menu-left) calculée par le script.
+   ========================================================== */
+:root { --lf-menu-bottom: 88px; --lf-menu-w: 250px; }
+
+/* Curseur Firefox (validé) */
+.videoOsdBottom .mdl-slider::-moz-range-thumb {
+  height: 10px !important; width: 10px !important; border-radius: 50% !important; transform: none !important; transition: transform .2s var(--lf-ease), box-shadow .2s !important;
+  background: radial-gradient(120% 90% at 50% 15%, #fff 0%, rgba(255,255,255,.97) 45%, rgba(226,230,240,.95) 100%) !important; border: .5px solid #fff !important;
+  box-shadow: inset 0 1.5px 1px #fff, inset 0 -2px 3px rgba(0,0,0,.14), 0 0 0 1px rgba(255,255,255,.25), 0 0 10px rgba(255,255,255,.55), 0 2px 6px rgba(0,0,0,.4) !important;
+}
+.videoOsdBottom .sliderContainer:not(.osdVolumeSliderContainer):hover .osdPositionSlider::-moz-range-thumb { transform: scale(1.9) !important; }
+.videoOsdBottom .osdPositionSlider:active::-moz-range-thumb { transform: scale(1.5) !important; box-shadow: 0 0 0 5px rgba(var(--lf-accent), .25), 0 2px 8px rgba(0,0,0,.45) !important; transition-duration: .08s !important; }
+.videoOsdBottom .mdl-slider::-moz-range-track, .videoOsdBottom .mdl-slider::-moz-range-progress { background: transparent !important; border: 0 !important; }
+
+/* Volume : barre plus à droite, nombre masqué, reste ouverte pendant qu'on glisse */
+.videoOsdBottom .volumeButtons:is(:hover, :focus-within, .lf-vol-drag) .osdVolumeSliderContainer { width: 100px !important; opacity: 1 !important; overflow: visible !important; margin-left: 2px !important; margin-right: 0 !important; }
+.videoOsdBottom .volumeButtons:is(:hover, :focus-within, .lf-vol-drag) { padding-right: 18px; }
+.videoOsdBottom .osdVolumeSliderContainer { cursor: pointer; touch-action: none; }
+.videoOsdBottom .osdVolumeSliderContainer :is(.mdl-slider-background-flex-container, .mdl-slider-background-flex, .mdl-slider-background-lower, .mdl-slider-background-upper) { pointer-events: none !important; }
+.videoOsdBottom .osdVolumeSliderContainer .mdl-slider-background-flex-container { margin: 0 !important; padding: 0 !important; left: 0 !important; right: 0 !important; width: auto !important; }
+.videoOsdBottom .osdVolumeSliderContainer .sliderBubble { display: none !important; }
+
+/* Verre des menus un peu moins transparent (fond .42 → .55) */
+body:has(#videoOsdPage:not(.hide)) :is(.actionSheet, #popupFocusContainer) {
+  background: linear-gradient(135deg, rgba(255,255,255,.13) 0%, rgba(255,255,255,.02) 50%), rgba(14,15,20,.55) !important;
+}
+
+/* Tous les menus : même hauteur (48 px du bas, en CSS : Jellyfin réécrit top/left après coup, mais un !important de feuille de style passe devant).
+   [script] Centrage : le script calcule --lf-menu-left pour chaque menu ; sans script, ils restent calés à droite. */
+body:has(#videoOsdPage:not(.hide)) .actionSheet:not(#popupFocusContainer) {
+  translate: none !important; top: auto !important; bottom: var(--lf-menu-bottom) !important; left: var(--lf-menu-left, auto) !important; right: 3vw;
+  width: var(--lf-menu-w) !important; min-width: 0 !important; max-width: 90vw !important; max-height: 52vh !important; transform-origin: bottom center;
+}
+/* Le menu épisodes porte aussi .actionSheet : même règle, sans le décalage translate de la v0.35 (c'était l'écart de 40 px) */
+#popupFocusContainer { bottom: var(--lf-menu-bottom) !important; left: var(--lf-menu-left, auto) !important; translate: none !important; }
+.actionSheet:not(#popupFocusContainer) .actionSheetItemText { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body:has(#videoOsdPage:not(.hide)) .actionSheet:not(#popupFocusContainer) .actionSheetTitle { padding: 12px 16px 6px !important; font-size: 1.05rem !important; line-height: 17px !important; }
+body:has(#videoOsdPage:not(.hide)) .actionSheet:not(#popupFocusContainer) .actionSheetMenuItem { padding-top: 7px !important; padding-bottom: 7px !important; }
+#popupContentContainer .previewItemTitle { padding-top: 2px !important; padding-bottom: 2px !important; }
+/* Menu des saisons (même fenêtre que le menu épisodes, sans résumés) : même largeur que les autres menus */
+#popupFocusContainer:not(:has(.previewListItemContent)) { width: var(--lf-menu-w) !important; }
+/* Résumé de l'épisode en cours : marge à droite */
+#popupContentContainer .previewListItemContent { padding-right: 2px !important; width: auto !important; box-sizing: border-box !important; }
+/* Le plugin fixe la largeur du texte (322 px) : on la libère pour que la marge s'applique */
+#popupContentContainer .previewItemContentRow, #popupContentContainer .previewItemContentRow > :last-child { width: auto !important; max-width: 100% !important; box-sizing: border-box !important; }
+
+/* Glitch : Jellyfin agrandit (scale 1.025) et surligne la ligne qui a le focus, en plus de notre survol. On neutralise. */
+body:has(#videoOsdPage:not(.hide)) :is(.actionSheet, #popupFocusContainer) :is(.listItem, .actionSheetMenuItem):not(.previewItemTitle):is(:focus, :focus-visible, :hover) {
+  transform: none !important; background: none !important; outline: none !important;
+}
+
+/* Firefox (Windows) envoie la vidéo sur un plan à part (overlay) que le flou du verre ne voit pas bien.
+   Un effet invisible sur la vidéo, seulement quand un menu du lecteur existe, la remet dans la page. */
+body:has(#videoOsdPage:not(.hide)):has(.dialogContainer :is(.actionSheet, #popupFocusContainer), .iconOsd:not(.iconOsd-hidden), .upNextDialog:not(.hide), .subtitleSyncContainer:not(.hide), .videoSubtitles .videoSubtitlesInner) video.htmlvideoplayer { filter: brightness(1.001) !important; }
+/* Survol : glissement (validé). Le texte glisse par text-indent au lieu de transform :
+   plus de calque séparé, donc plus de traînée ni de franges colorées derrière le verre flouté */
+#popupContentContainer .previewItemTitle, body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem .listItemBody { transform: none !important; transition: color .15s, text-indent .2s var(--lf-ease) !important; }
+/* ---------- Sous-titres ---------- */
+/* a) Rendu natif du navigateur (réglage par défaut) : seul ::cue est possible (fond uni, pas de flou ni d'arrondi) */
+video.htmlvideoplayer::cue {
+  font-family: "DM Sans", sans-serif !important; font-weight: 600 !important; color: #fff !important;
+  background-color: rgba(10, 12, 16, .42) !important; text-shadow: 0 1px 2px rgba(0, 0, 0, .5) !important;
+}
+html[data-lf-subbg="none"] video.htmlvideoplayer::cue { background-color: transparent !important; text-shadow: 0 0 2px #000, 0 1px 3px rgba(0, 0, 0, .9), 0 0 12px rgba(0, 0, 0, .6) !important; }
+/* b) Rendu « Personnalisé » de Jellyfin (dans la page) : verre flouté sans bord, arrondi, une capsule par ligne */
+.videoSubtitles .videoSubtitlesInner {
+  font-family: "DM Sans", sans-serif !important; font-weight: 600 !important; color: #fff !important; border: 0 !important;
+  background: rgba(14, 15, 20, .38) !important; backdrop-filter: blur(16px) saturate(160%) !important; -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border-radius: 12px !important; padding: .12em .6em !important; line-height: 1.5 !important;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone; text-shadow: 0 1px 2px rgba(0, 0, 0, .45) !important;
+}
+html[data-lf-subbg="none"] .videoSubtitles .videoSubtitlesInner { background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; text-shadow: 0 0 2px #000, 0 1px 3px rgba(0, 0, 0, .9), 0 0 12px rgba(0, 0, 0, .6) !important; }
+
+
+/* ---------- Finitions du lecteur ---------- */
+/* Verre commun (même rendu que les menus) */
+:root { --lf-glass-bg: linear-gradient(135deg, rgba(255,255,255,.13) 0%, rgba(255,255,255,.02) 50%), rgba(14,15,20,.55);
+        --lf-glass-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 18px 44px rgba(0,0,0,.45); }
+
+/* 1. Carte « Épisode suivant » */
+.upNextDialog {
+  background: var(--lf-glass-bg) !important; backdrop-filter: blur(28px) saturate(170%) !important; -webkit-backdrop-filter: blur(28px) saturate(170%) !important;
+  border: 1px solid rgba(255,255,255,.14) !important; border-radius: 18px !important; box-shadow: var(--lf-glass-shadow) !important; color: #fff !important; overflow: hidden;
+}
+.upNextDialog .upNextDialog-poster, .upNextDialog .upNextDialog-poster * { border-radius: 10px !important; }
+.upNextDialog :is(.upNextDialog-title, h2, h3) { font-weight: 700 !important; }
+.upNextDialog :is(.upNextDialog-overview, .upNextDialog-mediainfo) { opacity: .7; font-size: .85rem; }
+.upNextDialog .upNextDialog-countdownText { font-weight: 600; color: rgba(255,255,255,.85) !important; }
+.upNextDialog .upNextDialog-countdownText :is(.upNextDialog-countdownTime, span) { color: rgb(var(--lf-accent)) !important; font-variant-numeric: tabular-nums; }
+.upNextDialog button { border-radius: 999px !important; padding: .45em 1.2em !important; font-weight: 600 !important; text-transform: none !important; transition: background-color .2s, color .2s, transform .2s var(--lf-ease) !important; }
+.upNextDialog .btnStartNow { background: #fff !important; color: #0e0f14 !important; }
+.upNextDialog .btnHide { background: rgba(255,255,255,.1) !important; color: #fff !important; border: 1px solid rgba(255,255,255,.18) !important; }
+@media (hover: hover) { .upNextDialog button:hover { transform: scale(1.05); } .upNextDialog .btnHide:hover { color: rgb(var(--lf-accent)) !important; } }
+
+/* 2. Synchro des sous-titres : même verre, curseur argent */
+.subtitleSyncContainer {
+  background: var(--lf-glass-bg) !important; backdrop-filter: blur(28px) saturate(170%) !important; -webkit-backdrop-filter: blur(28px) saturate(170%) !important;
+  border: 1px solid rgba(255,255,255,.14) !important; border-radius: 18px !important; box-shadow: var(--lf-glass-shadow) !important;
+}
+.subtitleSyncContainer .subtitleSyncTextField { font-weight: 700 !important; font-variant-numeric: tabular-nums; }
+.subtitleSyncContainer .subtitleSyncSlider { color: #fff !important; }
+.subtitleSyncContainer .mdl-slider-background-flex { height: 5px !important; margin-top: -2.5px !important; border-radius: 999px !important; background: rgba(255,255,255,.18) !important; }
+.subtitleSyncContainer .mdl-slider-background-lower { background: #fff !important; border-radius: 999px !important; }
+.subtitleSyncContainer .mdl-slider::-webkit-slider-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 0 8px rgba(255,255,255,.5), 0 2px 6px rgba(0,0,0,.4) !important; }
+.subtitleSyncContainer .mdl-slider::-moz-range-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 0 8px rgba(255,255,255,.5), 0 2px 6px rgba(0,0,0,.4) !important; }
+.subtitleSyncContainer .subtitleSync-closeButton { color: rgba(255,255,255,.8) !important; transition: color .2s, transform .2s var(--lf-ease) !important; }
+@media (hover: hover) { .subtitleSyncContainer .subtitleSync-closeButton:hover { color: rgb(var(--lf-accent)) !important; transform: scale(1.15); } }
+
+/* 3. Chargement : couleur du thème (ancien et nouveau spinner de Jellyfin) */
+.mdl-spinner__layer, .docspinner .mdl-spinner__layer { border-color: rgb(var(--lf-accent)) !important; }
+.MuiCircularProgress-root { color: rgb(var(--lf-accent)) !important; }
+
+/* 4. Clavier / télécommande : repère visible seulement quand on navigue sans souris (:focus-visible) */
+body:has(#videoOsdPage:not(.hide)) :is(.actionSheet, #popupFocusContainer) :is(.actionSheetMenuItem, .previewItemTitle):focus-visible :is(.listItemBody, .actionSheetItemText, span) { color: rgb(var(--lf-accent)) !important; }
+body:has(#videoOsdPage:not(.hide)) :is(.actionSheet, #popupFocusContainer) .previewItemTitle:focus-visible { text-indent: 4px; }
+.videoOsdBottom .buttons button:focus-visible, .videoOsd-appBar button:focus-visible { color: rgb(var(--lf-accent)) !important; transform: scale(1.2) !important; outline: none !important; filter: drop-shadow(0 0 5px rgba(var(--lf-accent), .45)); }
+.videoOsdBottom .osdPositionSlider:focus-visible::-webkit-slider-thumb { transform: scale(1.9) !important; }
+.videoOsdBottom .osdPositionSlider:focus-visible::-moz-range-thumb { transform: scale(1.9) !important; }
+
+/* ---------- Ajouts de la v0.36 ---------- */
+/* Barre noire sous l'en-tête du lecteur : sa bordure basse (1 px) */
+body:has(#videoOsdPage:not(.hide)) .skinHeader { border-bottom: 0 !important; }
+
+/* Pause : grand bouton rond sombre au centre de l'écran (décor : un clic sur la vidéo relance déjà la lecture).
+   Pas de flou derrière, pour éviter le souci d'overlay de Firefox. */
+@keyframes lfPausePop { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.8); } 60% { opacity: 1; transform: translate(-50%, -50%) scale(1.04); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+body:has(#videoOsdPage:not(.hide) .videoOsdBottom .btnPause .play_arrow) .videoPlayerContainer::after {
+  content: "play_arrow"; font-family: "Material Icons"; font-size: 56px; line-height: 96px; text-align: center; color: #fff;
+  position: fixed; left: 50%; top: 50%; width: 96px; height: 96px; border-radius: 50%; pointer-events: none; z-index: 2;
+  background: rgba(8, 9, 13, .55); border: 1px solid rgba(255, 255, 255, .16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 10px 30px rgba(0, 0, 0, .45);
+  font-feature-settings: "liga"; text-indent: 6px; animation: lfPausePop .35s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+/* Titre « Saison 2 » du menu épisodes : la flèche part à gauche, le titre grossit et prend la couleur du thème */
+#popupFocusContainer #popupTitleContainer .actionSheetTitle { transform-origin: left center; transition: color .2s, transform .3s var(--lf-ease) !important; }
+
+/* Volume affiché au centre (molette, touches) : même verre que les menus, barre blanche comme celle du lecteur */
+.iconOsd {
+  background: linear-gradient(135deg, rgba(255,255,255,.13) 0%, rgba(255,255,255,.02) 50%), rgba(14,15,20,.55) !important;
+  backdrop-filter: blur(28px) saturate(170%) !important; -webkit-backdrop-filter: blur(28px) saturate(170%) !important;
+  border: 1px solid rgba(255,255,255,.14) !important; border-radius: 18px !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 18px 44px rgba(0,0,0,.45) !important;
+}
+.iconOsd .iconOsdIcon { color: #fff !important; }
+.iconOsd .iconOsdProgressOuter { height: 5px !important; border-radius: 999px !important; background: rgba(255,255,255,.18) !important; overflow: hidden !important; }
+.iconOsd .iconOsdProgressInner { height: 100% !important; background: #fff !important; border-radius: 999px !important; }
+
+/* Retour : flèche simple, plus grande, décollée des bords ; au survol, couleur du thème et grossissement.
+   Jellyfin 12 affiche un nouvel en-tête MUI (.videoOsd-appBar) ; l'ancien (.pageTitle, .headerBackButton) reste caché dans la page. */
+.videoOsd-appBar > .MuiTypography-root { font-size: 1.8rem !important; font-weight: 600 !important; line-height: 1.2 !important; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .75)); }
+.videoOsd-appBar > .MuiIconButton-root:first-child {
+  background: none !important; border: 0 !important; box-shadow: none !important; padding: 8px !important; margin: 14px 0 0 28px !important;
+  color: #fff !important; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .75)) !important; transform-origin: 50% 50% !important;
+  transition: color .25s, transform .25s var(--lf-ease) !important;
+}
+.videoOsd-appBar > .MuiIconButton-root:first-child .MuiSvgIcon-root { font-size: 38px !important; }
+
+/* Titre en bas (validé) : le titre rejoint la ligne des boutons, juste après le volume,
+   et glisse vers la droite quand la barre de volume s'ouvre (même durée, même courbe). */
+.skinHeader.osdHeader { contain: none !important; }
+.videoOsd-appBar > .MuiTypography-root {
+  position: fixed !important; left: calc(3vw + 252px); bottom: 44px; margin: 0 !important; max-width: 45vw;
+  font-size: 1.05rem !important; font-weight: 600 !important; line-height: 22px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .7)); transition: translate .3s var(--lf-ease);
+}
+body:has(.videoOsdBottom .volumeButtons:is(:hover, :focus-within, .lf-vol-drag)) .videoOsd-appBar > .MuiTypography-root { translate: 120px 0; }
+
+@media (hover: hover) {
+  #popupFocusContainer #popupTitleContainer:hover .actionSheetTitle { transform: scale(1.08); }
+  #popupFocusContainer #popupTitleContainer:hover #popupTitleSwitchIcon { transform: translateX(-6px) !important; }
+  .videoOsd-appBar > .MuiIconButton-root:first-child:hover { background: none !important; color: rgb(var(--lf-accent)) !important; transform: scale(1.2) !important; }
+  #popupFocusContainer #popupContentContainer .previewItemTitle:hover,
+  body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem:hover .listItemBody { transform: none !important; text-indent: 4px; }
+}
