@@ -1,7 +1,11 @@
 /* ==========================================================
-   LeoFlix : thème Jellyfin maison (v0.36)
+   LeoFlix : thème Jellyfin maison (v0.37)
    Base : thème sombre d'origine de Jellyfin 12.4, sans import externe
    Validé : accueil, connexion, bibliothèques, fiche film, fiche série, page saison, lecteur
+   v0.37 : verre unifié (une recette, trois niveaux, variables en tête de fichier) ; survols harmonisés,
+           boutons en verre qui se soulèvent sans transform (bug Firefox) ; textes anglais / français selon la
+           langue de Jellyfin ; fiche : logo calé sur le titre, plancher de hauteur ; carte « Épisode suivant » ;
+           écrans étroits et mode mobile (barre du haut sur une ligne, fiche à gauche) ; marge du plugin Editor's Choice annulée.
    v0.36 : finitions du lecteur (section en fin de fichier). Certaines fonctions demandent
    le script leoflix.js (plugin JavaScript Injector), voir le README.
    ========================================================== */
@@ -16,23 +20,60 @@
 :root {
   --lf-accent: 196, 201, 210;       /* argent : accent principal (bleu acier : 70, 130, 180) */
   --lf-accent-alt: 176, 184, 196;   /* argent vif : halo vignettes, barres (acier vif : 46, 134, 210) */
+  --lf-accent-ch: 196 201 210;      /* même couleur, format attendu par Jellyfin 12 (espaces) : à changer avec --lf-accent */
   --lf-bg: 9, 9, 11;
-  --lf-glass: rgba(20, 20, 24, 0.55);
-  --lf-glass-border: rgba(255, 255, 255, 0.08);
-  --lf-blur: 16px;
   --lf-ease: cubic-bezier(.2, .8, .2, 1);
+
+  /* ---------- Verre : une recette, trois niveaux ----------
+     Tout le verre du thème vient d'ici. Changer une valeur la change partout.
+     Léger  : capsules et boutons posés sur une image (Mes médias, barre du haut, Regarder, Lecture...)
+     Normal : panneaux du lecteur (menus, épisodes, Épisode suivant...) et barre du haut au défilement
+     Dense  : beaucoup de texte sur un fond imprévisible (menus « … », fenêtres, connexion)
+     Par niveau : fond (opacité), flou, saturation, bordure (opacité), reflet (opacité), ombre. */
+  --lf-glass-tint: 16, 17, 22;
+  --lf-g1-bg: .22; --lf-g1-blur: 20px; --lf-g1-sat: 150%; --lf-g1-border: .12; --lf-g1-sheen: .16; --lf-g1-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+  --lf-g2-bg: .55; --lf-g2-blur: 28px; --lf-g2-sat: 170%; --lf-g2-border: .14; --lf-g2-sheen: .13; --lf-g2-shadow: 0 18px 44px rgba(0, 0, 0, .45);
+  --lf-g3-bg: .78; --lf-g3-blur: 24px; --lf-g3-sat: 150%; --lf-g3-border: .10; --lf-g3-sheen: .06; --lf-g3-shadow: 0 24px 60px rgba(0, 0, 0, .55);
+  /* Recettes assemblées (à ne pas modifier : elles lisent les réglages ci-dessus) */
+  --lf-g1: linear-gradient(135deg, rgba(255, 255, 255, var(--lf-g1-sheen)) 0%, rgba(255, 255, 255, calc(var(--lf-g1-sheen) / 4)) 45%, rgba(255, 255, 255, 0) 100%), rgba(var(--lf-glass-tint), var(--lf-g1-bg));
+  --lf-g2: linear-gradient(135deg, rgba(255, 255, 255, var(--lf-g2-sheen)) 0%, rgba(255, 255, 255, calc(var(--lf-g2-sheen) / 6)) 50%), rgba(var(--lf-glass-tint), var(--lf-g2-bg));
+  --lf-g3: linear-gradient(135deg, rgba(255, 255, 255, var(--lf-g3-sheen)) 0%, rgba(255, 255, 255, 0) 60%), rgba(var(--lf-glass-tint), var(--lf-g3-bg));
+  --lf-g1-filter: blur(var(--lf-g1-blur)) saturate(var(--lf-g1-sat));
+  --lf-g2-filter: blur(var(--lf-g2-blur)) saturate(var(--lf-g2-sat));
+  --lf-g3-filter: blur(var(--lf-g3-blur)) saturate(var(--lf-g3-sat));
+  --lf-g1-line: 1px solid rgba(255, 255, 255, var(--lf-g1-border));
+  --lf-g2-line: 1px solid rgba(255, 255, 255, var(--lf-g2-border));
+  --lf-g3-line: 1px solid rgba(255, 255, 255, var(--lf-g3-border));
+  --lf-g1-box: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-g1-sheen) + .04)), var(--lf-g1-shadow);
+  --lf-g2-box: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-g2-sheen) + .03)), var(--lf-g2-shadow);
+  --lf-g3-box: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-g3-sheen) + .06)), var(--lf-g3-shadow);
+
+  /* Arrondis : capsules et barres / panneaux / champs (les vignettes ont le leur : --lf-card-radius) */
+  --lf-r-pill: 999px; --lf-r-panel: 18px; --lf-r-field: 10px;
+
+  /* Hauteur d'écran pour la fiche, avec un plancher : sous 680 px de haut (téléphone à l'horizontale, console ouverte…),
+     la fiche garde ses proportions de 680 px et défile, au lieu de tasser le logo sur le titre */
+  --lf-vh: max(1vh, 6.8px);
+
+  /* Survols, trois familles : capsule (grossit + halo), icône (grossit + lueur), ligne de menu (glisse) */
+  --lf-hover-capsule: 1.08; --lf-hover-icon: 1.15; --lf-hover-slide: 4px;
+  /* Boutons en verre : ils s'agrandissent sans transform (Firefox affiche des lignes rouges et des carrés sur un élément agrandi par transform) */
+  --lf-grow-x: 2px; --lf-grow-y: 2px; --lf-btn-lift: 4px;
 }
 body {
+  /* Couleurs natives de Jellyfin 12 : l'accent + son « canal » (utilisé pour les fonds semi-transparents des survols et sélections) */
   --jf-palette-primary-main: rgb(var(--lf-accent));
   --jf-palette-secondary-main: rgb(var(--lf-accent));
+  --jf-palette-primary-mainChannel: var(--lf-accent-ch);
+  --jf-palette-secondary-mainChannel: var(--lf-accent-ch);
+  --jf-card-borderRadius: var(--lf-card-radius);
 
-  /* Verre (boutons et barre du haut) */
-  --lf-glass-a: .18; --lf-glass-blur: 20px; --lf-glass-sat: 150%; --lf-sheen: .16;
-  --lf-rest-border: .08; --lf-edge-a: .5;
+  /* Survol des capsules : bordure accent + halo */
+  --lf-edge-a: .5;
   --lf-halo: 0 0 14px rgba(var(--lf-accent), .55), 0 0 30px rgba(var(--lf-accent), .25);
 
   /* Boutons "Mes médias" */
-  --lf-btn-w: 150px; --lf-btn-scale: 1.08; --lf-press-scale: .98;
+  --lf-btn-w: 150px;
 
   /* Vignettes */
   --lf-card-radius: 16px; --lf-card-scale: 1.05; --lf-lift: -6px;
@@ -49,6 +90,50 @@ body {
   --lf-ob-scale: .8;
 }
 
+/* ---------- Textes écrits par le thème : anglais par défaut, français si l'interface est en français ----------
+   Jellyfin pose la langue de l'interface sur la page (<html lang="fr">, "en-US"…). Ajouter une langue = un bloc :lang(xx). */
+:root {
+  --lf-t-whos: "Who's watching?";
+  --lf-t-signin: "Sign in";
+  --lf-t-play: "Play";
+  --lf-t-resume: "Resume";
+  --lf-t-current: "Now playing";
+  --lf-t-q-auto: "Auto";
+  --lf-t-q-rec: "recommended";
+  --lf-t-q-max: "Maximum";
+  --lf-t-q-ultra: "Ultra";
+  --lf-t-q-vhigh: "Very high";
+  --lf-t-q-high: "High";
+  --lf-t-q-good: "Good";
+  --lf-t-q-med: "Medium";
+  --lf-t-q-low: "Low";
+  --lf-t-q-vlow: "Very low";
+  --lf-t-q-saver: "Data saver";
+  --lf-t-q-1500: "480p · 1.5 Mbps";
+  --lf-t-q-720: "360p · 0.7 Mbps";
+  --lf-t-q-420: "240p · 0.4 Mbps";
+}
+:root:lang(fr) {
+  --lf-t-whos: "Qui regarde ?";
+  --lf-t-signin: "Connexion";
+  --lf-t-play: "Lecture";
+  --lf-t-resume: "Reprendre";
+  --lf-t-current: "En cours";
+  --lf-t-q-auto: "Automatique";
+  --lf-t-q-rec: "recommandé";
+  --lf-t-q-max: "Maximale";
+  --lf-t-q-vhigh: "Très haute";
+  --lf-t-q-high: "Haute";
+  --lf-t-q-good: "Bonne";
+  --lf-t-q-med: "Moyenne";
+  --lf-t-q-low: "Basse";
+  --lf-t-q-vlow: "Très basse";
+  --lf-t-q-saver: "Économie de données";
+  --lf-t-q-1500: "480p · 1,5 Mbps";
+  --lf-t-q-720: "360p · 0,7 Mbps";
+  --lf-t-q-420: "240p · 0,4 Mbps";
+}
+
 /* ---------- Fond ---------- */
 /* Nuit teintée : couleur d'accent en haut, presque noir en bas (suit l'accent de chaque utilisateur) */
 .backgroundContainer { background: linear-gradient(180deg, color-mix(in srgb, rgb(var(--lf-accent)) 18%, #05060a) 0%, #07080c 70%) !important; }
@@ -58,33 +143,30 @@ body {
     linear-gradient(180deg, color-mix(in srgb, rgba(var(--lf-accent), .5) 35%, rgba(5, 6, 10, .55)) 0%, rgba(5, 6, 10, .75) 75%) !important;
 }
 .skinHeader.skinHeader-withBackground {
-  background: var(--lf-glass) !important;
-  backdrop-filter: blur(var(--lf-blur)); -webkit-backdrop-filter: blur(var(--lf-blur));
-  border-bottom: 1px solid var(--lf-glass-border);
+  background: var(--lf-g2) !important;
+  backdrop-filter: var(--lf-g2-filter); -webkit-backdrop-filter: var(--lf-g2-filter);
+  border-bottom: var(--lf-g2-line);
 }
 
 /* ---------- Capsule en verre (boutons "Mes médias" + barre du haut) ---------- */
 .homeLibraryButton,
 header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge) {
-  border-radius: 999px !important;
+  border-radius: var(--lf-r-pill) !important;
   text-transform: uppercase; letter-spacing: .06em;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, var(--lf-sheen)) 0%, rgba(255, 255, 255, calc(var(--lf-sheen) / 4)) 45%, rgba(255, 255, 255, 0) 100%),
-    rgba(18, 18, 22, var(--lf-glass-a)) !important;
-  backdrop-filter: blur(var(--lf-glass-blur)) saturate(var(--lf-glass-sat)) !important;
-  -webkit-backdrop-filter: blur(var(--lf-glass-blur)) saturate(var(--lf-glass-sat)) !important;
-  border: 1px solid rgba(255, 255, 255, var(--lf-rest-border)) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-sheen) + .04)), 0 4px 14px rgba(0, 0, 0, .35);
-  transition: transform .3s var(--lf-ease), border-color .3s, box-shadow .3s, color .3s, text-shadow .3s, filter .15s !important;
+  background: var(--lf-g1) !important;
+  backdrop-filter: var(--lf-g1-filter) !important;
+  -webkit-backdrop-filter: var(--lf-g1-filter) !important;
+  border: var(--lf-g1-line) !important;
+  box-shadow: var(--lf-g1-box);
+  transition: top .3s var(--lf-ease), padding .3s var(--lf-ease), margin .3s var(--lf-ease), width .3s var(--lf-ease), flex-basis .3s var(--lf-ease), border-color .3s, box-shadow .3s, color .3s, text-shadow .3s, filter .15s !important;
 }
 @media (hover: hover) {
   .homeLibraryButton:hover,
   header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge):hover {
-    transform: scale(var(--lf-btn-scale));
     color: rgb(var(--lf-accent)) !important;
     text-shadow: 0 0 10px rgba(var(--lf-accent), .8);
     border-color: rgba(var(--lf-accent), var(--lf-edge-a)) !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-sheen) + .08)), var(--lf-halo), 0 8px 22px rgba(0, 0, 0, .5) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-g1-sheen) + .08)), var(--lf-halo), 0 8px 22px rgba(0, 0, 0, .5) !important;
   }
   .homeLibraryButton:hover .homeLibraryIcon,
   .homeLibraryButton:hover .homeLibraryText { color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .8); }
@@ -92,7 +174,7 @@ header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge
 }
 .homeLibraryButton:active,
 header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge):active {
-  transform: scale(var(--lf-press-scale)) !important; filter: brightness(1.1); transition-duration: .08s !important;
+  filter: brightness(1.15); transition-duration: .08s !important;
 }
 
 /* ---------- Boutons "Mes médias" ---------- */
@@ -213,10 +295,18 @@ body { --lf-pg-end: 40%; --lf-pg-g1: 4px; --lf-pg-g2: 10px; --lf-pg-g3: 20px; --
 .card[data-type="Episode"] .cardBox > .cardText a { color: inherit !important; }
 .card[data-type="Episode"] .cardBox > .cardText-first { grid-row: 2; font-size: 1.05em; }
 .card[data-type="Episode"] .cardBox > .cardText-secondary { grid-row: 3; padding-bottom: 13px !important; font-weight: 400; color: rgba(255, 255, 255, .85) !important; }
+/* La dernière ligne de texte, quelle qu'elle soit, garde sa marge du bas
+   (sur la fiche, « Plus de Saison 2 » n'affiche qu'une ligne : le titre de l'épisode) */
+.card[data-type="Episode"] .cardBox > .cardText:not(:has(~ .cardText)) { padding-bottom: 13px !important; }
+/* Épisode commencé : le texte remonte au-dessus de la barre de progression */
+.card[data-type="Episode"]:has(:is(.itemProgressBar, .itemLinearProgress)) .cardBox > .cardText:not(:has(~ .cardText)) { padding-bottom: calc(var(--lf-prog-bottom) + var(--lf-prog-h) + 14px) !important; }
 
 /* ---------- Bandeau "film en tête" (plugin Editor's Choice) ---------- */
 /* Pleine largeur sous la barre du haut, fondu doux vers la page avec une teinte d'accent */
+/* --lf-hero-pull = hauteur de la barre du haut (fixée par LeoFlix : barre MUI 48 px + 14 + 6 px de marges, quelle que soit la taille d'écran) */
 body { --lf-hero-h: 65vh; --lf-hero-pull: 68px; --lf-mask-start: 55%; }
+/* Le plugin décale l'accueil de 30 px sous 1600 px de large (sa règle « max-width: 1600px ») : le bandeau ne touchait plus le haut */
+.homeSectionsContainer.editorsChoiceAdded { margin-top: 0 !important; }
 .homeSectionsContainer .editorsChoiceContainer {
   padding: 0 !important;
   margin-top: calc(-1 * var(--lf-hero-pull)) !important;
@@ -253,44 +343,35 @@ body { --lf-hero-h: 65vh; --lf-hero-pull: 68px; --lf-mask-start: 55%; }
 }
 /* Bouton Regarder : même capsule en verre que la barre du haut */
 .editorsChoiceItemBanner > div > .editorsChoiceItemButton {
-  position: static !important; margin: 0 !important; padding: 11px 30px !important;
-  border-radius: 999px !important; text-transform: uppercase; letter-spacing: .06em; font-weight: 500; color: #fff !important;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, var(--lf-sheen)) 0%, rgba(255, 255, 255, calc(var(--lf-sheen) / 4)) 45%, rgba(255, 255, 255, 0) 100%),
-    rgba(18, 18, 22, var(--lf-glass-a)) !important;
-  backdrop-filter: blur(var(--lf-glass-blur)) saturate(var(--lf-glass-sat)) !important;
-  -webkit-backdrop-filter: blur(var(--lf-glass-blur)) saturate(var(--lf-glass-sat)) !important;
-  border: 1px solid rgba(255, 255, 255, var(--lf-rest-border)) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-sheen) + .04)), 0 4px 14px rgba(0, 0, 0, .35) !important;
-  transition: transform .3s var(--lf-ease), border-color .3s, box-shadow .3s, color .3s, text-shadow .3s !important;
+  position: relative !important; margin: 0 !important; padding: 11px 30px !important;
+  border-radius: var(--lf-r-pill) !important; text-transform: uppercase; letter-spacing: .06em; font-weight: 500; color: #fff !important;
+  background: var(--lf-g1) !important;
+  backdrop-filter: var(--lf-g1-filter) !important;
+  -webkit-backdrop-filter: var(--lf-g1-filter) !important;
+  border: var(--lf-g1-line) !important;
+  box-shadow: var(--lf-g1-box) !important;
+  transition: top .3s var(--lf-ease), padding .3s var(--lf-ease), margin .3s var(--lf-ease), min-width .3s var(--lf-ease), border-color .3s, box-shadow .3s, color .3s, text-shadow .3s, filter .15s !important;
 }
 @media (hover: hover) {
   .editorsChoiceItemBanner > div > .editorsChoiceItemButton:hover {
-    transform: scale(var(--lf-btn-scale)); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .8);
+    color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .8);
     border-color: rgba(var(--lf-accent), var(--lf-edge-a)) !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-sheen) + .08)), var(--lf-halo), 0 8px 22px rgba(0, 0, 0, .5) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-g1-sheen) + .08)), var(--lf-halo), 0 8px 22px rgba(0, 0, 0, .5) !important;
   }
 }
-.editorsChoiceItemBanner > div > .editorsChoiceItemButton:active { transform: scale(var(--lf-press-scale)) !important; transition-duration: .08s !important; }
-/* Verre du bouton un peu plus lumineux que la barre du haut (fond d'image plus chargé) */
-.editorsChoiceItemBanner > div > .editorsChoiceItemButton {
-  background: linear-gradient(135deg, rgba(255, 255, 255, .2) 0%, rgba(255, 255, 255, .05) 45%, rgba(255, 255, 255, 0) 100%), rgba(18, 18, 22, .3) !important;
-  border-color: rgba(255, 255, 255, .16) !important;
-}
+.editorsChoiceItemBanner > div > .editorsChoiceItemButton:active { filter: brightness(1.15); transition-duration: .08s !important; }
 .editorsChoiceScrollButtonsContainer { z-index: 5 !important; }
-/* Flèches et pause : ronds en verre, en bas à droite */
+/* Flèches et pause : icônes seules, épurées, en bas à droite */
 .editorsChoiceScrollButtonsContainer { mix-blend-mode: normal !important; top: auto !important; bottom: calc(var(--lf-hero-h) * .2) !important; right: 4.5vw !important; width: auto !important; }
 .editorsChoiceContainer .emby-scrollbuttons-button {
   width: 40px !important; height: 40px !important; padding: 0 !important; margin-left: 8px !important;
   display: inline-flex !important; align-items: center; justify-content: center; border-radius: 50% !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, .2) 0%, rgba(255, 255, 255, .05) 45%, rgba(255, 255, 255, 0) 100%), rgba(18, 18, 22, .3) !important;
-  backdrop-filter: blur(16px) saturate(150%); -webkit-backdrop-filter: blur(16px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, .18) !important; color: #fff !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 4px 14px rgba(0, 0, 0, .35) !important;
-  transition: transform .25s, box-shadow .25s, border-color .25s !important;
+  background: none !important; border: 0 !important; box-shadow: none !important; color: rgba(255, 255, 255, .85) !important;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .6));
+  transition: transform .25s, color .25s, filter .25s !important;
 }
 @media (hover: hover) {
-  .editorsChoiceContainer .emby-scrollbuttons-button:hover { transform: scale(1.08); border-color: rgba(var(--lf-accent), .6) !important; box-shadow: 0 0 14px rgba(var(--lf-accent), .55) !important; }
+  .editorsChoiceContainer .emby-scrollbuttons-button:hover { transform: scale(1.3); color: rgb(var(--lf-accent)) !important; filter: drop-shadow(0 0 8px rgba(var(--lf-accent), .6)) drop-shadow(0 1px 4px rgba(0, 0, 0, .6)); }
 }
 
 /* ---------- Titres de section : style Netflix ---------- */
@@ -298,13 +379,13 @@ body { --lf-hero-h: 65vh; --lf-hero-pull: 68px; --lf-mask-start: 55%; }
    - Netflix une taille en dessous : font-size 1.4rem (reste identique)
    - Éditorial avec trait sans halo : font-size 1rem; font-weight 600; uppercase; letter-spacing .14em;
      color rgba(255,255,255,.88); ::before trait 4px x 1.05em, rgb(var(--lf-accent)), border-radius 999px, margin-right .7em */
-.sectionTitle-cards { font-size: 1.6rem !important; font-weight: 800 !important; letter-spacing: -.01em; color: #fff; text-shadow: 0 2px 12px rgba(0, 0, 0, .5); transition: color .25s, text-shadow .25s; }
+.sectionTitle-cards { font-size: 1.6rem !important; font-weight: 800 !important; letter-spacing: -.01em; line-height: 1.35 !important; color: #fff !important; text-shadow: 0 2px 12px rgba(0, 0, 0, .5); transition: color .25s, text-shadow .25s; }
 @media (hover: hover) { a:hover > .sectionTitle-cards { color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 12px rgba(var(--lf-accent), .6); } }
 
 /* ---------- Flèches des rangées : minimal ---------- */
 .emby-scrollbuttons:not(.splide__arrows) .emby-scrollbuttons-button { background: none !important; border: 0 !important; box-shadow: none !important; color: rgba(255, 255, 255, .75) !important; transition: color .25s, transform .25s, opacity .25s, text-shadow .25s !important; }
 .emby-scrollbuttons:not(.splide__arrows) .emby-scrollbuttons-button[disabled] { opacity: .25; }
-@media (hover: hover) { .emby-scrollbuttons:not(.splide__arrows) .emby-scrollbuttons-button:not([disabled]):hover { color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .7); transform: scale(1.15); } }
+@media (hover: hover) { .emby-scrollbuttons:not(.splide__arrows) .emby-scrollbuttons-button:not([disabled]):hover { color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .7); transform: scale(var(--lf-hover-icon)); } }
 
 /* ---------- Tuiles sans image : nuit + lueur d'accent ---------- */
 .defaultCardBackground { background: radial-gradient(ellipse at 30% 20%, rgba(var(--lf-accent), .45) 0%, transparent 60%), linear-gradient(160deg, color-mix(in srgb, rgb(var(--lf-accent)) 30%, #0b0d14) 0%, #0a0b10 100%) !important; }
@@ -365,7 +446,7 @@ body { accent-color: rgb(var(--lf-accent)); }
 /* "Merci de vous identifier" remplacé par "Qui regarde ?" */
 #loginPage .visualLoginForm h1 { font-size: 0 !important; margin: 0 0 56px !important; text-align: center; }
 #loginPage .visualLoginForm h1::after {
-  content: "Qui regarde ?"; font-size: clamp(2rem, 3.4vw, 3rem); font-weight: 800; letter-spacing: -.01em;
+  content: var(--lf-t-whos); font-size: clamp(2rem, 3.4vw, 3rem); font-weight: 800; letter-spacing: -.01em;
   color: #fff; text-shadow: 0 4px 24px rgba(0, 0, 0, .5);
 }
 #loginPage #divUsers { display: flex !important; flex-wrap: wrap; justify-content: center; gap: 64px !important; }
@@ -399,13 +480,13 @@ body { accent-color: rgb(var(--lf-accent)); }
 }
 #loginPage .readOnlyContent > button {
   width: auto !important; min-width: 240px; margin: 0 !important; padding: 8px 18px !important;
-  font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; border-radius: 999px !important; color: rgba(255, 255, 255, .75) !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, .12) 0%, rgba(255, 255, 255, 0) 100%), rgba(18, 18, 22, .25) !important;
-  border: 1px solid rgba(255, 255, 255, .1) !important; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  transition: color .25s, border-color .25s, box-shadow .25s, transform .25s;
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; border-radius: var(--lf-r-pill) !important; color: rgba(255, 255, 255, .75) !important;
+  background: var(--lf-g1) !important; box-shadow: var(--lf-g1-box);
+  border: var(--lf-g1-line) !important; backdrop-filter: var(--lf-g1-filter); -webkit-backdrop-filter: var(--lf-g1-filter);
+  transition: color .25s, border-color .25s, box-shadow .25s, top .3s var(--lf-ease), padding .3s var(--lf-ease), margin .3s var(--lf-ease), min-width .3s var(--lf-ease);
 }
 @media (hover: hover) {
-  #loginPage .readOnlyContent > button:hover { color: rgb(var(--lf-accent)) !important; border-color: rgba(var(--lf-accent), .5) !important; box-shadow: 0 0 12px rgba(var(--lf-accent), .45); transform: scale(1.04); }
+  #loginPage .readOnlyContent > button:hover { color: rgb(var(--lf-accent)) !important; border-color: rgba(var(--lf-accent), .5) !important; box-shadow: 0 0 12px rgba(var(--lf-accent), .45); }
 }
 
 /* ---------- Écran des profils : variante "empilé à gauche" (gardée de côté) ----------
@@ -433,19 +514,19 @@ html[data-lf-login="left"] #loginPage .readOnlyContent { left: 7vw; right: auto;
 /* ---------- Formulaire de connexion (mot de passe) : carte en verre ---------- */
 #loginPage > div:has(> .manualLoginForm:not(.hide)) { justify-content: center; padding-top: 0 !important; }
 #loginPage .manualLoginForm {
-  width: min(380px, 90vw) !important; padding: 34px 34px 28px !important; border-radius: 24px; box-sizing: border-box;
-  background: linear-gradient(135deg, rgba(255, 255, 255, .1) 0%, rgba(255, 255, 255, 0) 60%), rgba(16, 17, 22, .55);
-  backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, .1); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 24px 60px rgba(0, 0, 0, .55);
+  width: min(380px, 90vw) !important; padding: 34px 34px 28px !important; border-radius: var(--lf-r-panel); box-sizing: border-box;
+  background: var(--lf-g3);
+  backdrop-filter: var(--lf-g3-filter); -webkit-backdrop-filter: var(--lf-g3-filter);
+  border: var(--lf-g3-line); box-shadow: var(--lf-g3-box);
   animation: lfRowIn .8s cubic-bezier(.16, 1, .3, 1) both;
 }
 #loginPage .manualLoginForm > div:first-child { padding: 0 !important; margin-bottom: 22px; justify-content: center; }
 #loginPage .manualLoginForm h1.sectionTitle { font-size: 0 !important; margin: 0 !important; text-align: center; width: 100%; }
-#loginPage .manualLoginForm h1.sectionTitle::after { content: "Connexion"; font-size: 1.9rem; font-weight: 800; letter-spacing: -.01em; color: #fff; }
+#loginPage .manualLoginForm h1.sectionTitle::after { content: var(--lf-t-signin); font-size: 1.9rem; font-weight: 800; letter-spacing: -.01em; color: #fff; }
 #loginPage .manualLoginForm .inputContainer { margin-bottom: 16px !important; }
 #loginPage .manualLoginForm .inputLabel { font-size: .7rem !important; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: rgba(255, 255, 255, .55) !important; margin-bottom: 6px; }
 #loginPage .manualLoginForm .emby-input {
-  border-radius: 12px !important; padding: 11px 14px !important; background: rgba(0, 0, 0, .28) !important;
+  border-radius: var(--lf-r-field) !important; padding: 11px 14px !important; background: rgba(0, 0, 0, .28) !important;
   border: 1px solid rgba(255, 255, 255, .1) !important; color: #fff !important; transition: border-color .25s, box-shadow .25s, background .25s;
 }
 #loginPage .manualLoginForm .emby-input:focus { outline: none !important; border-color: rgba(var(--lf-accent), .7) !important; box-shadow: 0 0 0 3px rgba(var(--lf-accent), .2), 0 0 16px rgba(var(--lf-accent), .25) !important; background: rgba(0, 0, 0, .38) !important; }
@@ -493,11 +574,11 @@ header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButto
   border-radius: 999px !important; color: #fff !important; text-transform: uppercase; letter-spacing: .06em; font-size: .75rem;
   background: none !important; border: 1px solid transparent !important; box-shadow: none !important; transition: transform .25s, color .25s !important;
 }
-@media (hover: hover) { header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-contained > .MuiButton-root:hover { transform: scale(1.05); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .6); } }
+@media (hover: hover) { header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-contained > .MuiButton-root:hover { transform: scale(var(--lf-hover-capsule)); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .6); } }
 /* Filtre / tri / affichage / pages : icônes minimales */
 header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-text > .MuiButton-root { color: rgba(255, 255, 255, .75) !important; border: 0 !important; min-width: 36px !important; transition: color .25s, transform .25s !important; }
 @media (hover: hover) {
-  header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-text > .MuiButton-root:hover { background: none !important; color: rgb(var(--lf-accent)) !important; transform: scale(1.12); }
+  header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-text > .MuiButton-root:hover { background: none !important; color: rgb(var(--lf-accent)) !important; transform: scale(var(--lf-hover-icon)); }
   header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-text > .MuiButton-root:hover svg { filter: drop-shadow(0 0 6px rgba(var(--lf-accent), .7)); }
 }
 header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiButtonGroup-text > .MuiButton-root.Mui-disabled { opacity: .25; }
@@ -505,8 +586,8 @@ header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) .MuiBadge
 /* Alphabet à droite */
 .alphaPicker-fixed-right .MuiPaper-root { background: none !important; box-shadow: none !important; }
 .alphaPicker-fixed-right .MuiToggleButton-root { border: 0 !important; color: rgba(255, 255, 255, .45) !important; font-size: .68rem !important; font-weight: 600; padding: 2px 4px !important; border-radius: 6px !important; transition: color .2s, transform .2s !important; }
-@media (hover: hover) { .alphaPicker-fixed-right .MuiToggleButton-root:hover { background: none !important; color: #fff !important; transform: scale(1.25); } }
-.alphaPicker-fixed-right .MuiToggleButton-root.Mui-selected { background: none !important; color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 8px rgba(var(--lf-accent), .7); transform: scale(1.25); }
+@media (hover: hover) { .alphaPicker-fixed-right .MuiToggleButton-root:hover { background: none !important; color: #fff !important; transform: scale(var(--lf-hover-icon)); } }
+.alphaPicker-fixed-right .MuiToggleButton-root.Mui-selected { background: none !important; color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 8px rgba(var(--lf-accent), .7); transform: scale(var(--lf-hover-icon)); }
 /* Grille : aérée, apparition en vague */
 .itemsContainer.vertical-wrap > .card .cardBox { margin: .9em !important; }
 .itemsContainer.vertical-wrap > .card { animation: lfRowIn .7s cubic-bezier(.16, 1, .3, 1) both; }
@@ -593,16 +674,23 @@ body:has(#itemDetailPage:not(.hide)) .backgroundContainer.withBackdrop {
     linear-gradient(to right, rgba(5, 6, 10, .7) 0%, rgba(5, 6, 10, .25) 45%, transparent 70%),
     linear-gradient(to top, rgba(7, 8, 12, 1) 0%, rgba(7, 8, 12, .6) 35%, transparent 65%) !important;
 }
-#itemDetailPage #itemBackdrop { height: 82vh !important; }
+#itemDetailPage #itemBackdrop { height: calc(82 * var(--lf-vh)) !important; }
 #itemDetailPage .detailImageContainer { display: none !important; } /* pas d'affiche : tout sur l'image */
 #itemDetailPage .detailLogo {
-  left: 4.5vw !important; right: auto !important; top: 22vh !important; width: min(460px, 38vw) !important; height: 18vh !important;
+  left: 4.5vw !important; right: auto !important; top: calc(22 * var(--lf-vh)) !important; width: min(460px, 38vw) !important; height: calc(18 * var(--lf-vh)) !important;
   background-position: left bottom !important; filter: drop-shadow(0 4px 18px rgba(0, 0, 0, .6));
 }
+/* Ordinateur : le logo est calé sur le bloc titre, pas sur l'écran.
+   Jellyfin remonte le bloc titre d'une valeur fixe (7,2em) : on la reprend à notre compte (--lf-ribbon-up)
+   et le bas du logo se place --lf-logo-gap au-dessus du titre, quelle que soit la hauteur de la fenêtre.
+   (calcul : bas de l'image 82 - remontée 32 = 50 ; logo de 18 → haut du logo à 32, moins la remontée et l'écart) */
+body { --lf-ribbon-up: 7.2rem; --lf-logo-gap: 16px; }
+.layout-desktop #itemDetailPage .detailRibbon { margin-top: calc(-1 * var(--lf-ribbon-up)) !important; }
+.layout-desktop #itemDetailPage .detailLogo { top: calc(32 * var(--lf-vh) - var(--lf-ribbon-up) - var(--lf-logo-gap)) !important; }
 #itemDetailPage:has(.detailLogo:not(.hide)) .nameContainer h1.itemName { display: none !important; } /* le logo remplace le titre */
 #itemDetailPage .detailPageWrapperContainer {
-  margin-top: -32vh !important; position: relative; z-index: 1;
-  background: linear-gradient(to bottom, rgba(7, 8, 12, 0) 0%, rgba(7, 8, 12, 0) 24vh, rgba(7, 8, 12, .9) 40vh, #07080c 50vh) !important;
+  margin-top: calc(-32 * var(--lf-vh)) !important; position: relative; z-index: 1;
+  background: linear-gradient(to bottom, rgba(7, 8, 12, 0) 0%, rgba(7, 8, 12, 0) calc(24 * var(--lf-vh)), rgba(7, 8, 12, .9) calc(40 * var(--lf-vh)), #07080c calc(50 * var(--lf-vh))) !important;
 }
 #itemDetailPage .detailRibbon { background: none !important; display: flex !important; flex-direction: column; flex-wrap: nowrap !important; align-items: flex-start !important; align-content: flex-start !important; height: auto !important; }
 #itemDetailPage .detailRibbon, #itemDetailPage .detailPagePrimaryContent { padding-left: 4.5vw !important; }
@@ -621,25 +709,27 @@ body:has(#itemDetailPage:not(.hide)) .backgroundContainer.withBackdrop {
   width: 40px !important; height: 44px !important; min-width: 0 !important; padding: 0 !important; margin: 0 !important; border-radius: 50% !important;
   display: inline-flex !important; align-items: center; justify-content: center; background: none !important; border: 1px solid transparent !important;
   color: rgba(255, 255, 255, .8) !important; transition: transform .25s, color .25s, text-shadow .25s !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .75), 0 0 12px rgba(0, 0, 0, .45); /* lisibles sur une image claire */
 }
 #itemDetailPage .mainDetailButtons .detailButton .detailButton-content { margin: 0 !important; }
 #itemDetailPage .mainDetailButtons .detailButton-icon { font-size: 22px !important; }
-@media (hover: hover) { #itemDetailPage .mainDetailButtons .detailButton:not(.btnPlay):hover { transform: scale(1.1); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .7); } }
+@media (hover: hover) { #itemDetailPage .mainDetailButtons .detailButton:not(.btnPlay):hover { transform: scale(var(--lf-hover-icon)); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .7); } }
 #itemDetailPage .mainDetailButtons .btnPlay {
-  width: auto !important; height: auto !important; padding: 11px 26px 11px 18px !important; border-radius: 999px !important; gap: 8px;
+  width: auto !important; height: auto !important; padding: 11px 26px 11px 18px !important; border-radius: var(--lf-r-pill) !important; gap: 8px;
   flex-direction: row !important; align-items: center !important; line-height: 1 !important; color: #fff !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, .2) 0%, rgba(255, 255, 255, .05) 45%, rgba(255, 255, 255, 0) 100%), rgba(18, 18, 22, .3) !important;
-  backdrop-filter: blur(20px) saturate(150%) !important; -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
-  border: 1px solid rgba(255, 255, 255, .16) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 4px 14px rgba(0, 0, 0, .35) !important;
-  transition: transform .3s var(--lf-ease), border-color .3s, box-shadow .3s, color .3s, text-shadow .3s !important;
+  background: var(--lf-g1) !important;
+  backdrop-filter: var(--lf-g1-filter) !important; -webkit-backdrop-filter: var(--lf-g1-filter) !important;
+  border: var(--lf-g1-line) !important; box-shadow: var(--lf-g1-box) !important;
+  transition: top .3s var(--lf-ease), padding .3s var(--lf-ease), margin .3s var(--lf-ease), min-width .3s var(--lf-ease), border-color .3s, box-shadow .3s, color .3s, text-shadow .3s, filter .15s !important;
 }
 #itemDetailPage .mainDetailButtons .btnPlay .detailButton-content { display: inline-flex !important; align-items: center; height: 22px; }
-#itemDetailPage .mainDetailButtons .btnPlay::after { content: "Lecture"; display: inline-block; line-height: 1; padding-top: 1px; font-size: .82rem; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
-#itemDetailPage .mainDetailButtons .btnPlay[title="Reprendre"]::after { content: "Reprendre"; }
+#itemDetailPage .mainDetailButtons .btnPlay::after { content: var(--lf-t-play); display: inline-block; line-height: 1; padding-top: 1px; font-size: .82rem; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+/* Reprendre : reconnu à l'infobulle de Jellyfin, dans sa langue */
+#itemDetailPage .mainDetailButtons .btnPlay:is([title="Reprendre"], [title="Resume"])::after { content: var(--lf-t-resume); }
 @media (hover: hover) {
   #itemDetailPage .mainDetailButtons .btnPlay:hover {
-    transform: scale(var(--lf-btn-scale)); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .8);
-    border-color: rgba(var(--lf-accent), var(--lf-edge-a)) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .24), var(--lf-halo), 0 8px 22px rgba(0, 0, 0, .5) !important;
+    color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .8);
+    border-color: rgba(var(--lf-accent), var(--lf-edge-a)) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-g1-sheen) + .08)), var(--lf-halo), 0 8px 22px rgba(0, 0, 0, .5) !important;
   }
 }
 /* Boutons masqués : Télécharger (déjà dans "…") ; sur un film, ceux réservés aux séries */
@@ -653,7 +743,7 @@ body:has(#itemDetailPage:not(.hide)) .backgroundContainer.withBackdrop {
 #itemDetailPage .itemDetailsGroup { order: 3; }
 #itemDetailPage .trackSelectionFieldContainer { margin-bottom: 4px !important; }
 #itemDetailPage .selectLabel { color: rgba(255, 255, 255, .5) !important; font-size: .62rem !important; min-width: 76px; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
-#itemDetailPage .detailTrackSelect { font-size: .78rem !important; padding: 2px 8px !important; border-radius: 8px !important; background: rgba(0, 0, 0, .28) !important; border: 1px solid rgba(255, 255, 255, .1) !important; transition: border-color .25s; }
+#itemDetailPage .detailTrackSelect { font-size: .78rem !important; padding: 2px 8px !important; border-radius: var(--lf-r-field) !important; background: rgba(0, 0, 0, .28) !important; border: 1px solid rgba(255, 255, 255, .1) !important; transition: border-color .25s; }
 #itemDetailPage .detailTrackSelect:hover, #itemDetailPage .detailTrackSelect:focus { border-color: rgba(var(--lf-accent), .6) !important; }
 
 /* Textes */
@@ -668,6 +758,8 @@ body:has(#itemDetailPage:not(.hide)) .backgroundContainer.withBackdrop {
 
 /* Rangées du bas : titres visibles, distribution tout en bas en petits ronds */
 #itemDetailPage .cardText { font-size: .85rem; color: rgba(255, 255, 255, .85); }
+/* Comme à l'accueil : pas de titre sous les vignettes (Plus comme ça, collections...), sauf la distribution et les épisodes (titre sur l'image) */
+#itemDetailPage .card:not(.personCard, [data-type="Episode"]) .cardBox > :is(.cardText, .cardFooter) { display: none !important; }
 #itemDetailPage .cardText-secondary { color: rgba(255, 255, 255, .5) !important; }
 #itemDetailPage .detailPageSecondaryContainer { display: flex !important; flex-direction: column; }
 #itemDetailPage #similarCollapsible { margin-top: 30px !important; }
@@ -695,15 +787,15 @@ body:has(#itemDetailPage:not(.hide)) .backgroundContainer.withBackdrop {
   background: none !important; border: 0 !important; box-shadow: none !important; color: rgba(255, 255, 255, .75) !important;
   transition: transform .25s, color .25s, text-shadow .25s !important;
 }
-.dialog .fab:hover { transform: scale(1.15); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .7); }
+.dialog .fab:hover { transform: scale(var(--lf-hover-icon)); color: rgb(var(--lf-accent)) !important; text-shadow: 0 0 10px rgba(var(--lf-accent), .7); }
 .visualCardBox { border-radius: 16px !important; background: rgba(255, 255, 255, .04) !important; border: 1px solid rgba(255, 255, 255, .08) !important; overflow: hidden; box-shadow: none !important; }
 .visualCardBox .cardScalable, .visualCardBox .cardImageContainer { border-radius: 15px 15px 0 0 !important; box-shadow: none !important; }
 .visualCardBox .cardFooter { padding: 6px 8px 8px !important; }
 .visualCardBox .cardText { font-size: .78rem; color: rgba(255, 255, 255, .85); }
 .visualCardBox .cardText-secondary { color: rgba(255, 255, 255, .5) !important; }
 .visualCardBox .paper-icon-button-light { color: rgba(255, 255, 255, .7) !important; transition: color .2s, transform .2s; }
-.visualCardBox .paper-icon-button-light:hover { color: rgb(var(--lf-accent)) !important; transform: scale(1.15); text-shadow: 0 0 10px rgba(var(--lf-accent), .7); background: none !important; }
-.dialog :is(.emby-input, .emby-select, .emby-textarea) { border-radius: 10px !important; background: rgba(0, 0, 0, .3) !important; border: 1px solid rgba(255, 255, 255, .1) !important; transition: border-color .25s, box-shadow .25s; }
+.visualCardBox .paper-icon-button-light:hover { color: rgb(var(--lf-accent)) !important; transform: scale(var(--lf-hover-icon)); text-shadow: 0 0 10px rgba(var(--lf-accent), .7); background: none !important; }
+.dialog :is(.emby-input, .emby-select, .emby-textarea) { border-radius: var(--lf-r-field) !important; background: rgba(0, 0, 0, .3) !important; border: 1px solid rgba(255, 255, 255, .1) !important; transition: border-color .25s, box-shadow .25s; }
 .dialog :is(.emby-input, .emby-select, .emby-textarea):focus { border-color: rgba(var(--lf-accent), .7) !important; box-shadow: 0 0 0 3px rgba(var(--lf-accent), .18) !important; outline: none !important; }
 .dialog .inputLabel, .dialog .selectLabel { color: rgba(255, 255, 255, .6) !important; }
 .dialog .raised { border-radius: 999px !important; text-transform: uppercase; letter-spacing: .06em; font-size: .8rem; transition: transform .25s, box-shadow .25s, border-color .25s, color .25s !important; }
@@ -711,7 +803,9 @@ body:has(#itemDetailPage:not(.hide)) .backgroundContainer.withBackdrop {
 .dialog .raised.button-submit:hover { transform: scale(1.03); box-shadow: 0 0 18px rgba(var(--lf-accent), .6) !important; }
 .dialog .raised:not(.button-submit) { background: transparent !important; border: 1px solid rgba(255, 255, 255, .14) !important; color: rgba(255, 255, 255, .8) !important; }
 .dialog .raised:not(.button-submit):hover { border-color: rgba(255, 255, 255, .3) !important; color: #fff !important; }
-.actionSheet { border-radius: 16px !important; background: rgba(16, 17, 22, .82) !important; backdrop-filter: blur(22px) saturate(150%); -webkit-backdrop-filter: blur(22px) saturate(150%); border: 1px solid rgba(255, 255, 255, .08); box-shadow: 0 18px 50px rgba(0, 0, 0, .55) !important; overflow: hidden; padding: 6px 0; }
+.actionSheet { border-radius: var(--lf-r-panel) !important; background: var(--lf-g3) !important; backdrop-filter: var(--lf-g3-filter); -webkit-backdrop-filter: var(--lf-g3-filter); border: var(--lf-g3-line); box-shadow: var(--lf-g3-box) !important; overflow: hidden; padding: 6px 0; }
+/* Menus natifs de Jellyfin 12 (tri, filtres, affichage des pages bibliothèque) : même verre dense */
+:is(.MuiMenu-paper, .MuiPopover-paper) { border-radius: var(--lf-r-panel) !important; background: var(--lf-g3) !important; backdrop-filter: var(--lf-g3-filter); -webkit-backdrop-filter: var(--lf-g3-filter); border: var(--lf-g3-line); box-shadow: var(--lf-g3-box) !important; }
 .actionSheet .actionSheetMenuItem { border-radius: 10px !important; margin: 0 6px !important; width: calc(100% - 12px) !important; transition: background .2s, color .2s; }
 .actionSheet .actionSheetMenuItem:hover { background: rgba(var(--lf-accent), .16) !important; color: #fff; }
 .actionSheet .actionSheetMenuItem:hover .actionsheetMenuItemIcon { color: rgb(var(--lf-accent)) !important; }
@@ -764,7 +858,7 @@ body:has(#itemDetailPage:not(.hide)) .backgroundContainer.withBackdrop {
 #itemDetailPage #childrenContent .listItemMediaInfo { color: rgba(255, 255, 255, .5) !important; font-size: .8rem; }
 #itemDetailPage #childrenContent .listViewUserDataButtons { opacity: .35; transition: opacity .25s; }
 #itemDetailPage #childrenContent .listItem:hover .listViewUserDataButtons { opacity: 1; }
-html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent > .itemsContainer { margin-left: -14px !important; max-width: none !important; }
+html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent > .itemsContainer { margin-left: -14px !important; margin-right: -14px !important; max-width: none !important; }
 html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItem { padding: 12px 14px !important; margin: 0 !important; border: 0 !important; border-bottom: 1px solid rgba(255, 255, 255, .07) !important; border-radius: 0; }
 html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemImage { height: 130px !important; width: auto !important; aspect-ratio: 16 / 9; flex-shrink: 0; }
 html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemBody { display: grid !important; grid-template-columns: 1fr auto; column-gap: 16px; align-content: start; padding-left: 22px !important; padding-top: 10px !important; }
@@ -895,7 +989,7 @@ html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButton
 .videoOsdBottom .buttons > #popupPreviewButton, .videoOsdBottom .buttons:not(:has(> #popupPreviewButton)) > .btnSubtitles { margin-left: auto !important; }
 .videoOsdBottom .buttons button { color: rgba(255, 255, 255, .88) !important; background: none !important; transform-origin: 50% 50% !important; transition: color .25s, transform .25s, filter .25s !important; }
 @media (hover: hover) {
-  .videoOsdBottom .buttons button:hover { color: rgb(var(--lf-accent)) !important; transform: scale(1.2) !important; filter: drop-shadow(0 0 5px rgba(var(--lf-accent), .45)); }
+  .videoOsdBottom .buttons button:hover { color: rgb(var(--lf-accent)) !important; transform: scale(var(--lf-hover-icon)) !important; filter: drop-shadow(0 0 5px rgba(var(--lf-accent), .45)); }
 }
 .videoOsdBottom .btnPause { display: inline-flex !important; align-items: center; justify-content: center; }
 .videoOsdBottom .btnPause .material-icons { font-size: 2.5em !important; line-height: 1 !important; }
@@ -915,9 +1009,9 @@ html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButton
 @keyframes lfPopOut { to { opacity: 0; transform: scale(.94) translateY(6px); } }
 @keyframes lfItemIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 body:has(#videoOsdPage:not(.hide)) :is(.actionSheet, #popupFocusContainer) {
-  background: linear-gradient(135deg, rgba(255, 255, 255, .13) 0%, rgba(255, 255, 255, .02) 50%), rgba(14, 15, 20, .42) !important;
-  backdrop-filter: blur(28px) saturate(170%) !important; -webkit-backdrop-filter: blur(28px) saturate(170%) !important;
-  border: 1px solid rgba(255, 255, 255, .14) !important; border-radius: 18px !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), 0 18px 44px rgba(0, 0, 0, .45) !important;
+  background: var(--lf-g2) !important;
+  backdrop-filter: var(--lf-g2-filter) !important; -webkit-backdrop-filter: var(--lf-g2-filter) !important;
+  border: var(--lf-g2-line) !important; border-radius: var(--lf-r-panel) !important; box-shadow: var(--lf-g2-box) !important;
 }
 body:has(#videoOsdPage:not(.hide)) .actionSheet { animation: none; margin-top: 0 !important; }
 body:has(#videoOsdPage:not(.hide)) :is(.actionSheet[style*="scaleup"], #popupFocusContainer) { animation: lfOpenB .34s cubic-bezier(.22, 1, .36, 1) both !important; }
@@ -934,32 +1028,32 @@ body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem .listItemBo
 .actionSheet:has([data-id="420000"]) .actionSheetMenuItem[data-id] .actionSheetItemText { font-size: 0 !important; height: auto !important; max-height: none !important; overflow: visible !important; display: block !important; }
 .actionSheet:has([data-id="420000"]) .actionSheetMenuItem[data-id] .actionSheetItemText::before { display: inline; font-size: .88rem; line-height: 1.4; }
 .actionSheet:has([data-id="420000"]) .actionSheetMenuItem[data-id] .actionSheetItemText::after { display: inline; font-size: .72rem; line-height: 1.4; margin-left: 8px; opacity: .5; }
-.actionSheet:has([data-id="420000"]) [data-id="0"] .actionSheetItemText::before { content: "Automatique"; }
-.actionSheet:has([data-id="420000"]) [data-id="0"] .actionSheetItemText::after { content: "recommandé"; }
-.actionSheet:has([data-id="420000"]) [data-id="120000000"] .actionSheetItemText::before { content: "Maximale"; }
+.actionSheet:has([data-id="420000"]) [data-id="0"] .actionSheetItemText::before { content: var(--lf-t-q-auto); }
+.actionSheet:has([data-id="420000"]) [data-id="0"] .actionSheetItemText::after { content: var(--lf-t-q-rec); }
+.actionSheet:has([data-id="420000"]) [data-id="120000000"] .actionSheetItemText::before { content: var(--lf-t-q-max); }
 .actionSheet:has([data-id="420000"]) [data-id="120000000"] .actionSheetItemText::after { content: "120 Mbps"; }
-.actionSheet:has([data-id="420000"]) [data-id="80000000"] .actionSheetItemText::before { content: "Maximale"; }
+.actionSheet:has([data-id="420000"]) [data-id="80000000"] .actionSheetItemText::before { content: var(--lf-t-q-max); }
 .actionSheet:has([data-id="420000"]) [data-id="80000000"] .actionSheetItemText::after { content: "4K · 80 Mbps"; }
-.actionSheet:has([data-id="420000"]) :is([data-id="60000000"], [data-id="40000000"]) .actionSheetItemText::before { content: "Ultra"; }
+.actionSheet:has([data-id="420000"]) :is([data-id="60000000"], [data-id="40000000"]) .actionSheetItemText::before { content: var(--lf-t-q-ultra); }
 .actionSheet:has([data-id="420000"]) [data-id="60000000"] .actionSheetItemText::after { content: "4K · 60 Mbps"; }
 .actionSheet:has([data-id="420000"]) [data-id="40000000"] .actionSheetItemText::after { content: "4K · 40 Mbps"; }
-.actionSheet:has([data-id="420000"]) :is([data-id="20000000"], [data-id="15000000"]) .actionSheetItemText::before { content: "Très haute"; }
+.actionSheet:has([data-id="420000"]) :is([data-id="20000000"], [data-id="15000000"]) .actionSheetItemText::before { content: var(--lf-t-q-vhigh); }
 .actionSheet:has([data-id="420000"]) [data-id="20000000"] .actionSheetItemText::after { content: "1080p · 20 Mbps"; }
 .actionSheet:has([data-id="420000"]) [data-id="15000000"] .actionSheetItemText::after { content: "1080p · 15 Mbps"; }
-.actionSheet:has([data-id="420000"]) :is([data-id="10000000"], [data-id="8000000"]) .actionSheetItemText::before { content: "Haute"; }
+.actionSheet:has([data-id="420000"]) :is([data-id="10000000"], [data-id="8000000"]) .actionSheetItemText::before { content: var(--lf-t-q-high); }
 .actionSheet:has([data-id="420000"]) [data-id="10000000"] .actionSheetItemText::after { content: "1080p · 10 Mbps"; }
 .actionSheet:has([data-id="420000"]) [data-id="8000000"] .actionSheetItemText::after { content: "720p · 8 Mbps"; }
-.actionSheet:has([data-id="420000"]) :is([data-id="6000000"], [data-id="4000000"]) .actionSheetItemText::before { content: "Bonne"; }
+.actionSheet:has([data-id="420000"]) :is([data-id="6000000"], [data-id="4000000"]) .actionSheetItemText::before { content: var(--lf-t-q-good); }
 .actionSheet:has([data-id="420000"]) [data-id="6000000"] .actionSheetItemText::after { content: "720p · 6 Mbps"; }
 .actionSheet:has([data-id="420000"]) [data-id="4000000"] .actionSheetItemText::after { content: "720p · 4 Mbps"; }
-.actionSheet:has([data-id="420000"]) [data-id="3000000"] .actionSheetItemText::before { content: "Moyenne"; }
+.actionSheet:has([data-id="420000"]) [data-id="3000000"] .actionSheetItemText::before { content: var(--lf-t-q-med); }
 .actionSheet:has([data-id="420000"]) [data-id="3000000"] .actionSheetItemText::after { content: "480p · 3 Mbps"; }
-.actionSheet:has([data-id="420000"]) [data-id="1500000"] .actionSheetItemText::before { content: "Basse"; }
-.actionSheet:has([data-id="420000"]) [data-id="1500000"] .actionSheetItemText::after { content: "480p · 1,5 Mbps"; }
-.actionSheet:has([data-id="420000"]) [data-id="720000"] .actionSheetItemText::before { content: "Très basse"; }
-.actionSheet:has([data-id="420000"]) [data-id="720000"] .actionSheetItemText::after { content: "360p · 0,7 Mbps"; }
-.actionSheet:has([data-id="420000"]) [data-id="420000"] .actionSheetItemText::before { content: "Économie de données"; }
-.actionSheet:has([data-id="420000"]) [data-id="420000"] .actionSheetItemText::after { content: "240p · 0,4 Mbps"; }
+.actionSheet:has([data-id="420000"]) [data-id="1500000"] .actionSheetItemText::before { content: var(--lf-t-q-low); }
+.actionSheet:has([data-id="420000"]) [data-id="1500000"] .actionSheetItemText::after { content: var(--lf-t-q-1500); }
+.actionSheet:has([data-id="420000"]) [data-id="720000"] .actionSheetItemText::before { content: var(--lf-t-q-vlow); }
+.actionSheet:has([data-id="420000"]) [data-id="720000"] .actionSheetItemText::after { content: var(--lf-t-q-720); }
+.actionSheet:has([data-id="420000"]) [data-id="420000"] .actionSheetItemText::before { content: var(--lf-t-q-saver); }
+.actionSheet:has([data-id="420000"]) [data-id="420000"] .actionSheetItemText::after { content: var(--lf-t-q-420); }
 /* Aperçu des épisodes (plugin InPlayerEpisodePreview) : compact, centré au-dessus de son bouton */
 #previewPopup .dialogBackdrop { opacity: .2 !important; }
 #popupFocusContainer { top: auto !important; bottom: 94px !important; left: auto !important; right: calc(3vw + 116px) !important; width: 360px !important; max-width: 90vw; max-height: 52vh !important; margin: 0 !important; transform-origin: bottom center; }
@@ -985,7 +1079,7 @@ body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem .listItemBo
 #popupContentContainer .previewItemContentRow { height: auto !important; min-height: 0 !important; margin: 0 !important; }
 #popupContentContainer .previewItemContentRow > :last-child { font-size: .8rem; opacity: .7; line-height: 1.4; margin: 0 !important; padding: 0 !important; height: auto !important; max-height: none !important; }
 #popupContentContainer > .listItem:has(.previewListItemContent:not(.hide)) .previewItemTitle::after {
-  content: "En cours"; margin-left: 10px; padding: 1px 7px; border-radius: 999px; font-size: .64rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  content: var(--lf-t-current); margin-left: 10px; padding: 1px 7px; border-radius: 999px; font-size: .64rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
   color: rgba(255, 255, 255, .85); border: 1px solid rgba(255, 255, 255, .35); vertical-align: middle;
 }
 #popupContentContainer > .listItem:nth-child(2) { animation-delay: 0.03s; }
@@ -1027,11 +1121,6 @@ body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem .listItemBo
 .videoOsdBottom .osdVolumeSliderContainer .mdl-slider-background-flex-container { margin: 0 !important; padding: 0 !important; left: 0 !important; right: 0 !important; width: auto !important; }
 .videoOsdBottom .osdVolumeSliderContainer .sliderBubble { display: none !important; }
 
-/* Verre des menus un peu moins transparent (fond .42 → .55) */
-body:has(#videoOsdPage:not(.hide)) :is(.actionSheet, #popupFocusContainer) {
-  background: linear-gradient(135deg, rgba(255,255,255,.13) 0%, rgba(255,255,255,.02) 50%), rgba(14,15,20,.55) !important;
-}
-
 /* Tous les menus : même hauteur (48 px du bas, en CSS : Jellyfin réécrit top/left après coup, mais un !important de feuille de style passe devant).
    [script] Centrage : le script calcule --lf-menu-left pour chaque menu ; sans script, ils restent calés à droite. */
 body:has(#videoOsdPage:not(.hide)) .actionSheet:not(#popupFocusContainer) {
@@ -1072,37 +1161,58 @@ html[data-lf-subbg="none"] video.htmlvideoplayer::cue { background-color: transp
 /* b) Rendu « Personnalisé » de Jellyfin (dans la page) : verre flouté sans bord, arrondi, une capsule par ligne */
 .videoSubtitles .videoSubtitlesInner {
   font-family: "DM Sans", sans-serif !important; font-weight: 600 !important; color: #fff !important; border: 0 !important;
-  background: rgba(14, 15, 20, .38) !important; backdrop-filter: blur(16px) saturate(160%) !important; -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
-  border-radius: 12px !important; padding: .12em .6em !important; line-height: 1.5 !important;
+  /* Exception voulue : verre plus léger que les niveaux (.38), pour ne pas masquer l'image */
+  background: rgba(var(--lf-glass-tint), .38) !important; backdrop-filter: blur(16px) saturate(160%) !important; -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border-radius: var(--lf-r-field) !important; padding: .12em .6em !important; line-height: 1.5 !important;
   -webkit-box-decoration-break: clone; box-decoration-break: clone; text-shadow: 0 1px 2px rgba(0, 0, 0, .45) !important;
 }
 html[data-lf-subbg="none"] .videoSubtitles .videoSubtitlesInner { background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; text-shadow: 0 0 2px #000, 0 1px 3px rgba(0, 0, 0, .9), 0 0 12px rgba(0, 0, 0, .6) !important; }
 
 
 /* ---------- Finitions du lecteur ---------- */
-/* Verre commun (même rendu que les menus) */
-:root { --lf-glass-bg: linear-gradient(135deg, rgba(255,255,255,.13) 0%, rgba(255,255,255,.02) 50%), rgba(14,15,20,.55);
-        --lf-glass-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 18px 44px rgba(0,0,0,.45); }
+/* Verre : niveau « normal » (variables en tête de fichier) */
 
-/* 1. Carte « Épisode suivant » */
-.upNextDialog {
-  background: var(--lf-glass-bg) !important; backdrop-filter: blur(28px) saturate(170%) !important; -webkit-backdrop-filter: blur(28px) saturate(170%) !important;
-  border: 1px solid rgba(255,255,255,.14) !important; border-radius: 18px !important; box-shadow: var(--lf-glass-shadow) !important; color: #fff !important; overflow: hidden;
+/* 1. Carte « Épisode suivant » (structure relevée dans le code de jellyfin-web : upnextdialog.js)
+   Phrase « Prochain épisode dans 10 s » (le compte à rebours est le span .upNextDialog-countdownText), titre, infos, deux boutons.
+   Pas de transform au survol (Firefox + verre), et seulement un fondu à l'apparition. */
+.upNextContainer.upNextDialog {
+  right: 3vw !important; bottom: calc(var(--lf-menu-bottom) + 8px) !important; margin: 0 !important;
+  width: 360px !important; max-width: calc(100vw - 6vw); box-sizing: border-box; padding: 16px 18px 16px !important;
+  background: var(--lf-g2) !important; backdrop-filter: var(--lf-g2-filter) !important; -webkit-backdrop-filter: var(--lf-g2-filter) !important;
+  border: var(--lf-g2-line) !important; border-radius: var(--lf-r-panel) !important; box-shadow: var(--lf-g2-box) !important; color: #fff !important; overflow: hidden;
+  transition: opacity .3s var(--lf-ease) !important;
 }
-.upNextDialog .upNextDialog-poster, .upNextDialog .upNextDialog-poster * { border-radius: 10px !important; }
-.upNextDialog :is(.upNextDialog-title, h2, h3) { font-weight: 700 !important; }
-.upNextDialog :is(.upNextDialog-overview, .upNextDialog-mediainfo) { opacity: .7; font-size: .85rem; }
-.upNextDialog .upNextDialog-countdownText { font-weight: 600; color: rgba(255,255,255,.85) !important; }
-.upNextDialog .upNextDialog-countdownText :is(.upNextDialog-countdownTime, span) { color: rgb(var(--lf-accent)) !important; font-variant-numeric: tabular-nums; }
-.upNextDialog button { border-radius: 999px !important; padding: .45em 1.2em !important; font-weight: 600 !important; text-transform: none !important; transition: background-color .2s, color .2s, transform .2s var(--lf-ease) !important; }
-.upNextDialog .btnStartNow { background: #fff !important; color: #0e0f14 !important; }
-.upNextDialog .btnHide { background: rgba(255,255,255,.1) !important; color: #fff !important; border: 1px solid rgba(255,255,255,.18) !important; }
-@media (hover: hover) { .upNextDialog button:hover { transform: scale(1.05); } .upNextDialog .btnHide:hover { color: rgb(var(--lf-accent)) !important; } }
+.upNextDialog .upNextDialog-nextVideoText {
+  margin: 0 0 6px !important; font-size: .74rem !important; font-weight: 600 !important; line-height: 1.3;
+  text-transform: uppercase; letter-spacing: .08em; color: rgba(255, 255, 255, .6) !important;
+}
+.upNextDialog .upNextDialog-countdownText { color: rgb(var(--lf-accent)) !important; font-weight: 700; font-variant-numeric: tabular-nums; }
+.upNextDialog .upNextDialog-title { width: auto !important; margin: 0 0 4px !important; font-size: 1.05rem !important; font-weight: 700 !important; line-height: 1.3; }
+.upNextDialog :is(.upNextDialog-mediainfo, .btnHide) { display: none !important; } /* épuré : ni infos (année, durée, note) ni « Masquer » */
+/* [script] le titre « Série - S2:E2 - Nom » est réécrit en « 2. Nom » par leoflix.js */
+.upNextDialog .upNextDialog-buttons { width: auto !important; margin-top: 12px !important; justify-content: flex-start !important; gap: 8px; }
+/* Disposition retenue (v0.37) : texte à gauche, bouton « Commencer » à droite ; la carte s'élargit pour garder la phrase sur une ligne */
+:root .upNextDialog > .flex-grow { display: grid !important; grid-template-columns: 1fr auto; column-gap: 16px; align-items: center; }
+:root .upNextContainer.upNextDialog { width: auto !important; min-width: 340px; max-width: min(520px, 94vw); }
+:root .upNextDialog .upNextDialog-nextVideoText { grid-column: 1; white-space: nowrap; }
+:root .upNextDialog .upNextDialog-title { grid-column: 1; margin: 0 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+:root .upNextDialog .upNextDialog-buttons { grid-column: 2; grid-row: 1 / span 2; margin: 0 !important; }
+.upNextDialog .upNextDialog-button {
+  margin: 0 !important; border-radius: var(--lf-r-pill) !important; padding: .55em 1.3em !important; font-size: .82rem !important;
+  font-weight: 600 !important; text-transform: none !important; box-shadow: none !important;
+  transition: background-color .2s, color .2s, border-color .2s !important;
+}
+.upNextDialog .btnStartNow { background: #fff !important; color: #0e0f14 !important; border: 1px solid #fff !important; }
+.upNextDialog .btnHide { background: rgba(255, 255, 255, .08) !important; color: #fff !important; border: 1px solid rgba(255, 255, 255, .2) !important; }
+@media (hover: hover) {
+  .upNextDialog .btnStartNow:hover { background: rgba(255, 255, 255, .82) !important; }
+  .upNextDialog .btnHide:hover { color: rgb(var(--lf-accent)) !important; border-color: rgba(var(--lf-accent), .6) !important; }
+}
 
 /* 2. Synchro des sous-titres : même verre, curseur argent */
 .subtitleSyncContainer {
-  background: var(--lf-glass-bg) !important; backdrop-filter: blur(28px) saturate(170%) !important; -webkit-backdrop-filter: blur(28px) saturate(170%) !important;
-  border: 1px solid rgba(255,255,255,.14) !important; border-radius: 18px !important; box-shadow: var(--lf-glass-shadow) !important;
+  background: var(--lf-g2) !important; backdrop-filter: var(--lf-g2-filter) !important; -webkit-backdrop-filter: var(--lf-g2-filter) !important;
+  border: var(--lf-g2-line) !important; border-radius: var(--lf-r-panel) !important; box-shadow: var(--lf-g2-box) !important;
 }
 .subtitleSyncContainer .subtitleSyncTextField { font-weight: 700 !important; font-variant-numeric: tabular-nums; }
 .subtitleSyncContainer .subtitleSyncSlider { color: #fff !important; }
@@ -1111,7 +1221,7 @@ html[data-lf-subbg="none"] .videoSubtitles .videoSubtitlesInner { background: no
 .subtitleSyncContainer .mdl-slider::-webkit-slider-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 0 8px rgba(255,255,255,.5), 0 2px 6px rgba(0,0,0,.4) !important; }
 .subtitleSyncContainer .mdl-slider::-moz-range-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 0 8px rgba(255,255,255,.5), 0 2px 6px rgba(0,0,0,.4) !important; }
 .subtitleSyncContainer .subtitleSync-closeButton { color: rgba(255,255,255,.8) !important; transition: color .2s, transform .2s var(--lf-ease) !important; }
-@media (hover: hover) { .subtitleSyncContainer .subtitleSync-closeButton:hover { color: rgb(var(--lf-accent)) !important; transform: scale(1.15); } }
+@media (hover: hover) { .subtitleSyncContainer .subtitleSync-closeButton:hover { color: rgb(var(--lf-accent)) !important; transform: scale(var(--lf-hover-icon)); } }
 
 /* 3. Chargement : couleur du thème (ancien et nouveau spinner de Jellyfin) */
 .mdl-spinner__layer, .docspinner .mdl-spinner__layer { border-color: rgb(var(--lf-accent)) !important; }
@@ -1119,8 +1229,8 @@ html[data-lf-subbg="none"] .videoSubtitles .videoSubtitlesInner { background: no
 
 /* 4. Clavier / télécommande : repère visible seulement quand on navigue sans souris (:focus-visible) */
 body:has(#videoOsdPage:not(.hide)) :is(.actionSheet, #popupFocusContainer) :is(.actionSheetMenuItem, .previewItemTitle):focus-visible :is(.listItemBody, .actionSheetItemText, span) { color: rgb(var(--lf-accent)) !important; }
-body:has(#videoOsdPage:not(.hide)) :is(.actionSheet, #popupFocusContainer) .previewItemTitle:focus-visible { text-indent: 4px; }
-.videoOsdBottom .buttons button:focus-visible, .videoOsd-appBar button:focus-visible { color: rgb(var(--lf-accent)) !important; transform: scale(1.2) !important; outline: none !important; filter: drop-shadow(0 0 5px rgba(var(--lf-accent), .45)); }
+body:has(#videoOsdPage:not(.hide)) :is(.actionSheet, #popupFocusContainer) .previewItemTitle:focus-visible { text-indent: var(--lf-hover-slide); }
+.videoOsdBottom .buttons button:focus-visible, .videoOsd-appBar button:focus-visible { color: rgb(var(--lf-accent)) !important; transform: scale(var(--lf-hover-icon)) !important; outline: none !important; filter: drop-shadow(0 0 5px rgba(var(--lf-accent), .45)); }
 .videoOsdBottom .osdPositionSlider:focus-visible::-webkit-slider-thumb { transform: scale(1.9) !important; }
 .videoOsdBottom .osdPositionSlider:focus-visible::-moz-range-thumb { transform: scale(1.9) !important; }
 
@@ -1136,7 +1246,7 @@ body:has(#videoOsdPage:not(.hide) .videoOsdBottom .btnPause .play_arrow) .videoP
   position: fixed; left: 50%; top: 50%; width: 96px; height: 96px; border-radius: 50%; pointer-events: none; z-index: 2;
   background: rgba(8, 9, 13, .55); border: 1px solid rgba(255, 255, 255, .16);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 10px 30px rgba(0, 0, 0, .45);
-  font-feature-settings: "liga"; text-indent: 6px; animation: lfPausePop .35s cubic-bezier(.22, 1, .36, 1) both;
+  font-feature-settings: "liga"; text-indent: 0; animation: lfPausePop .35s cubic-bezier(.22, 1, .36, 1) both;
 }
 
 /* Titre « Saison 2 » du menu épisodes : la flèche part à gauche, le titre grossit et prend la couleur du thème */
@@ -1144,9 +1254,8 @@ body:has(#videoOsdPage:not(.hide) .videoOsdBottom .btnPause .play_arrow) .videoP
 
 /* Volume affiché au centre (molette, touches) : même verre que les menus, barre blanche comme celle du lecteur */
 .iconOsd {
-  background: linear-gradient(135deg, rgba(255,255,255,.13) 0%, rgba(255,255,255,.02) 50%), rgba(14,15,20,.55) !important;
-  backdrop-filter: blur(28px) saturate(170%) !important; -webkit-backdrop-filter: blur(28px) saturate(170%) !important;
-  border: 1px solid rgba(255,255,255,.14) !important; border-radius: 18px !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 18px 44px rgba(0,0,0,.45) !important;
+  background: var(--lf-g2) !important; backdrop-filter: var(--lf-g2-filter) !important; -webkit-backdrop-filter: var(--lf-g2-filter) !important;
+  border: var(--lf-g2-line) !important; border-radius: var(--lf-r-panel) !important; box-shadow: var(--lf-g2-box) !important;
 }
 .iconOsd .iconOsdIcon { color: #fff !important; }
 .iconOsd .iconOsdProgressOuter { height: 5px !important; border-radius: 999px !important; background: rgba(255,255,255,.18) !important; overflow: hidden !important; }
@@ -1175,7 +1284,91 @@ body:has(.videoOsdBottom .volumeButtons:is(:hover, :focus-within, .lf-vol-drag))
 @media (hover: hover) {
   #popupFocusContainer #popupTitleContainer:hover .actionSheetTitle { transform: scale(1.08); }
   #popupFocusContainer #popupTitleContainer:hover #popupTitleSwitchIcon { transform: translateX(-6px) !important; }
-  .videoOsd-appBar > .MuiIconButton-root:first-child:hover { background: none !important; color: rgb(var(--lf-accent)) !important; transform: scale(1.2) !important; }
+  .videoOsd-appBar > .MuiIconButton-root:first-child:hover { background: none !important; color: rgb(var(--lf-accent)) !important; transform: scale(var(--lf-hover-icon)) !important; }
   #popupFocusContainer #popupContentContainer .previewItemTitle:hover,
-  body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem:hover .listItemBody { transform: none !important; text-indent: 4px; }
+  body:has(#videoOsdPage:not(.hide)) .actionSheet .actionSheetMenuItem:hover .listItemBody { transform: none !important; text-indent: var(--lf-hover-slide); }
 }
+
+/* ---------- Survol des boutons en verre : soulèvement + léger agrandissement, sans transform ----------
+   Soulèvement : décalage « top » (position relative), l'ombre s'allonge comme si le bouton quittait le fond.
+   Agrandissement : les marges intérieures grandissent, les marges extérieures rétrécissent d'autant (les voisins ne bougent pas). */
+:is(.homeLibraryButton, header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge), #itemDetailPage .mainDetailButtons .btnPlay, #loginPage .readOnlyContent > button) { position: relative; top: 0; }
+.editorsChoiceItemBanner > div > .editorsChoiceItemButton { top: 0; }
+@media (hover: hover) {
+  :is(.homeLibraryButton, header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge), .editorsChoiceItemBanner > div > .editorsChoiceItemButton, #itemDetailPage .mainDetailButtons .btnPlay, #loginPage .readOnlyContent > button):hover {
+    top: calc(-1 * var(--lf-btn-lift)) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-g1-sheen) + .08)), var(--lf-halo), 0 calc(8px + var(--lf-btn-lift) * 2) 26px rgba(0, 0, 0, .55) !important;
+  }
+  /* Mes médias : 150 px de large, marge .5em et hauteur .9em (Jellyfin) */
+  .homeLibraryButton:hover {
+    width: calc(var(--lf-btn-w) + 2 * var(--lf-grow-x)) !important; flex-basis: calc(var(--lf-btn-w) + 2 * var(--lf-grow-x)) !important;
+    margin: calc(.5em - var(--lf-grow-y)) calc(.5em - var(--lf-grow-x)) !important;
+    padding-top: calc(.9em + var(--lf-grow-y)) !important; padding-bottom: calc(.9em + var(--lf-grow-y)) !important;
+  }
+  /* Barre du haut : 9 px / 18 px, marges 0 / 7 px */
+  header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge):hover {
+    padding: calc(9px + var(--lf-grow-y)) calc(18px + var(--lf-grow-x)) !important;
+    margin: calc(-1 * var(--lf-grow-y)) calc(7px - var(--lf-grow-x)) !important;
+  }
+  /* Regarder (bandeau) : 11 px / 30 px, marge 0 */
+  .editorsChoiceItemBanner > div > .editorsChoiceItemButton:hover {
+    padding: calc(11px + var(--lf-grow-y)) calc(30px + var(--lf-grow-x)) !important;
+    margin: calc(-1 * var(--lf-grow-y)) calc(-1 * var(--lf-grow-x)) !important;
+  }
+  /* Lecture (fiche) : 11 px / 26 px / 11 px / 18 px, marge 0 */
+  #itemDetailPage .mainDetailButtons .btnPlay:hover {
+    padding: calc(11px + var(--lf-grow-y)) calc(26px + var(--lf-grow-x)) calc(11px + var(--lf-grow-y)) calc(18px + var(--lf-grow-x)) !important;
+    margin: calc(-1 * var(--lf-grow-y)) calc(-1 * var(--lf-grow-x)) !important;
+  }
+  /* Boutons de l'écran des profils : 8 px / 18 px, 240 px de large mini, marge 0 */
+  #loginPage .readOnlyContent > button:hover {
+    padding: calc(8px + var(--lf-grow-y)) calc(18px + var(--lf-grow-x)) !important; min-width: calc(240px + 2 * var(--lf-grow-x));
+    margin: calc(-1 * var(--lf-grow-y)) calc(-1 * var(--lf-grow-x)) !important;
+  }
+}
+
+/* ==========================================================
+   v0.37 : écrans étroits et mode mobile (appli Android, navigateur de téléphone)
+   Règles par largeur disponible, pas par modèle de téléphone (Fold plié / déplié).
+   Le lecteur de l'appli Android est natif : aucun CSS ne s'y applique (choix assumé).
+   ========================================================== */
+
+/* Logo de la fiche : Jellyfin le cache sous 1100 px de large et en mode mobile, et LeoFlix cache alors le titre :
+   on le réaffiche partout (sauf TV) dès qu'il existe */
+html:not(.layout-tv) #itemDetailPage .detailLogo:not(.hide) { display: block !important; }
+
+/* Barre du haut sous 1200 px : Jellyfin la passe sur plusieurs lignes. On garde une seule ligne :
+   logo + bibliothèques défilent horizontalement, les icônes et l'avatar restent à droite */
+@media (max-width: 1199.98px) {
+  header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root:has(> .MuiStack-root) { flex-wrap: nowrap !important; }
+  header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root {
+    flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; overscroll-behavior-x: contain;
+    padding: 10px 4px !important; margin: -10px 0 !important; /* place pour le survol et le halo */
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
+  header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root::-webkit-scrollbar { display: none; }
+  header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root > * { flex-shrink: 0; }
+  header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiBox-root { flex: 0 0 auto !important; }
+}
+
+/* Mode mobile : pas de bouton lecture permanent sur les vignettes (on touche la vignette, on lance depuis la fiche) */
+.layout-mobile :is(.cardOverlayButton[data-action="play"]:not(.cardOverlayButton-hover), .cardOverlayButton-centered) { display: none !important; }
+
+/* Mode mobile, fiche : tout à gauche comme sur ordinateur (Jellyfin centre), sans la marge réservée à l'affiche */
+.layout-mobile #itemDetailPage :is(.nameContainer, .parentName, .itemName, .itemMiscInfo, .mainDetailButtons) {
+  align-items: flex-start !important; justify-content: flex-start !important; text-align: left !important;
+}
+.layout-mobile #itemDetailPage :is(.infoWrapper, .mainDetailButtons) { padding-left: 0 !important; margin-left: 0 !important; }
+/* Résumé sur toute la largeur */
+.layout-mobile #itemDetailPage :is(.overview, .overview-controls) { max-width: none !important; }
+.layout-mobile #itemDetailPage .detailPagePrimaryContent { padding-right: 4.5vw !important; }
+/* Image de fond : fondu vers le bas (en mobile, elle n'est pas fixée derrière la page et s'arrêtait net) */
+.layout-mobile #itemDetailPage #itemBackdrop {
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%); mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+}
+/* Logo calé sur le titre (en mobile : image décalée de 3rem, pas de remontée fixe du bloc titre), plus large sur petit écran */
+.layout-mobile #itemDetailPage .detailLogo {
+  top: calc(3rem + 32 * var(--lf-vh) - var(--lf-logo-gap)) !important; width: min(460px, 70vw) !important;
+}
+/* « À suivre » : texte un peu plus près du bord sur les petites vignettes */
+.layout-mobile .card[data-type="Episode"] .cardBox > .cardText { padding-left: 12px !important; padding-right: 10px !important; }

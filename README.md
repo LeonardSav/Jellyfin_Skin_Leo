@@ -8,10 +8,10 @@ Deux morceaux : une feuille de style (`leoflix.css`) et un petit script facultat
 Dans Jellyfin : **Tableau de bord > Slogan > Code CSS personnalisé**, mettre uniquement :
 
 ```css
-@import url('https://cdn.jsdelivr.net/gh/LeonardSav/Jellyfin_Skin_Leo@v0.36/leoflix.css');
+@import url('https://cdn.jsdelivr.net/gh/LeonardSav/Jellyfin_Skin_Leo@v0.37/leoflix.css');
 ```
 
-Pour mettre à jour, changer seulement le numéro de version (`@v0.36`), puis Ctrl+F5.
+Pour mettre à jour, changer seulement le numéro de version (`@v0.37`), puis Ctrl+F5.
 Une version publiée ne change jamais : on choisit quand passer à la suivante.
 
 ## 2. Le script (facultatif, recommandé)
@@ -65,6 +65,10 @@ Pour revenir en arrière, remettre le dossier à sa place et redémarrer.
 
 Testé sur Chrome / Edge / Brave et Firefox (Windows). Le CSS ne s'applique qu'à l'interface web
 (navigateur, appli Android, appli PC), pas aux applis TV natives.
+Dans l'appli Android, le lecteur vidéo par défaut est natif : il garde l'apparence de l'appli.
+
+Les textes ajoutés par le thème (« Reprendre », noms de qualité…) suivent la langue de Jellyfin :
+français si l'interface est en français, anglais sinon.
 
 ## Crédits
 
