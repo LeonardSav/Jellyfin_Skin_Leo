@@ -229,12 +229,13 @@
       place(); requestAnimationFrame(place); setTimeout(place, 150);
     });
     // Placer dès qu'un menu apparaît ou change de contenu (avant l'affichage : pas de saut)
+    const hasMenu = n => n.nodeType === 1 && (n.matches(MENU) || n.querySelector(MENU));
     new MutationObserver(muts => {
       if (!lastBtn || !playerOpen()) return;
       for (const mu of muts) {
         const t = mu.target.nodeType === 1 ? mu.target : mu.target.parentElement;
         if ((t && t.closest && t.closest(MENU)) ||
-            [...mu.addedNodes].some(n => n.nodeType === 1 && (n.matches(MENU) || n.querySelector(MENU)))) { place(); return; }
+            [...mu.addedNodes].some(hasMenu)) { place(); return; }
       }
     }).observe(document.body, { childList: true, subtree: true });
     addEventListener('resize', place);
@@ -363,10 +364,12 @@
         const missing = views.filter(v => !nativeIds.has(v.Id));
         // Retirer les copies devenues inutiles
         stack.querySelectorAll(':scope > .lf-view').forEach(c => { if (!missing.some(v => v.Id === c.dataset.id)) c.remove(); });
+        // Type de chaque bouton natif (films, séries…), calculé une fois : on copie un bouton du même type (même icône)
+        const nativeTypes = native.map(a => { const n = views.find(x => x.Id === idFromHref(a.getAttribute('href'))); return n ? n.CollectionType : null; });
         for (const v of missing) {
           if (stack.querySelector(`:scope > .lf-view[data-id="${v.Id}"]`)) continue;
-          const same = native.find(a => { const n = views.find(x => x.Id === idFromHref(a.getAttribute('href'))); return n && n.CollectionType === v.CollectionType; });
-          const c = (same || model).cloneNode(true);
+          const i = nativeTypes.indexOf(v.CollectionType);
+          const c = (i >= 0 ? native[i] : model).cloneNode(true);
           c.classList.add('lf-view'); c.dataset.id = v.Id;
           c.classList.remove('Mui-focusVisible', 'MuiButton-colorPrimary', 'MuiButton-textPrimary');
           c.setAttribute('href', libraryUrl(v));
@@ -599,7 +602,8 @@
       let code = null, ch = null, comment = false, variant = '';
       const flags = new Set(), custom = [];
       for (const raw of text.split(/\s+-\s+/).map(s => s.trim()).filter(Boolean)) {
-        let p = raw.replace(/\s*\[(cc|sdh)\]\s*/ig, () => { flags.add('sdh'); return ' '; }).trim();
+        if (/\[(cc|sdh)\]/i.test(raw)) flags.add('sdh');
+        let p = raw.replace(/\s*\[(cc|sdh)\]\s*/ig, ' ').trim();
         const low = p.toLowerCase(), par = low.match(/^(.+?)\s*\((.+)\)$/);
         const lc = langs().get(low) || (par && langs().get(par[1]));
         if (lc) {
@@ -773,7 +777,8 @@
       const nav = row.__lfNav; if (!nav) return;
       const max = row.scrollWidth - row.clientWidth;
       const over = max > 4, start = row.scrollLeft <= 4, end = row.scrollLeft >= max - 4;
-      if (nav.hidden !== !over) nav.hidden = !over;
+      const hide = !over;
+      if (nav.hidden !== hide) nav.hidden = hide;
       if (nav.children[0].disabled !== start) nav.children[0].disabled = start;
       if (nav.children[1].disabled !== end) nav.children[1].disabled = end;
     };
