@@ -1,7 +1,10 @@
 /* ==========================================================
-   LeoFlix : thème Jellyfin maison (v0.37)
+   LeoFlix : thème Jellyfin maison (v0.38)
    Base : thème sombre d'origine de Jellyfin 12.4, sans import externe
    Validé : accueil, connexion, bibliothèques, fiche film, fiche série, page saison, lecteur
+   v0.38 : survol des vignettes plus doux ; rangée des saisons sans fondu (Firefox le perdait) ; styles pour le script v0.38
+           (flèches des saisons, Infos / Grille, carte « Reprendre », capsules de la barre du haut, menu LeoFlix…).
+           Mobile : image de la fiche sous la barre du haut, logo calé sur le titre, marge avant les icônes de la barre.
    v0.37 : verre unifié (une recette, trois niveaux, variables en tête de fichier) ; survols harmonisés,
            boutons en verre qui se soulèvent sans transform (bug Firefox) ; textes anglais / français selon la
            langue de Jellyfin ; fiche : logo calé sur le titre, plancher de hauteur ; carte « Épisode suivant » ;
@@ -21,6 +24,7 @@
   --lf-accent: 196, 201, 210;       /* argent : accent principal (bleu acier : 70, 130, 180) */
   --lf-accent-alt: 176, 184, 196;   /* argent vif : halo vignettes, barres (acier vif : 46, 134, 210) */
   --lf-accent-ch: 196 201 210;      /* même couleur, format attendu par Jellyfin 12 (espaces) : à changer avec --lf-accent */
+  --lf-on-accent: 14, 15, 20;      /* texte posé sur un fond plein d'accent : sombre pour les accents clairs (argent, ambre), blanc sinon */
   --lf-bg: 9, 9, 11;
   --lf-ease: cubic-bezier(.2, .8, .2, 1);
 
@@ -76,12 +80,13 @@ body {
   --lf-btn-w: 150px;
 
   /* Vignettes */
-  --lf-card-radius: 16px; --lf-card-scale: 1.05; --lf-lift: -6px;
+  --lf-card-radius: 16px; --lf-card-scale: 1.035; --lf-lift: -4px; /* survol des vignettes */
   --lf-card-rest: 0 0 0 1px rgba(255, 255, 255, .1), 0 8px 22px rgba(0, 0, 0, .65); /* contour fin + ombre */
   --lf-card-halo-color: var(--lf-accent-alt);
-  --lf-card-halo: 0 0 0 1px rgba(var(--lf-card-halo-color), .7),
-                  0 0 21px rgba(var(--lf-card-halo-color), .75),
-                  0 0 44px rgba(var(--lf-card-halo-color), .42);
+  /* halo des vignettes au survol */
+  --lf-card-halo: 0 0 0 1px rgba(var(--lf-card-halo-color), .4),
+                  0 0 16px rgba(var(--lf-card-halo-color), .44),
+                  0 0 33px rgba(var(--lf-card-halo-color), .24);
 
   /* Barre de progression */
   --lf-prog-h: 8px; --lf-prog-side: 15px; --lf-prog-bottom: 8px;
@@ -228,7 +233,7 @@ header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge
 .cardOverlayFab-primary { transition: background .25s, box-shadow .25s, transform .25s !important; }
 @media (hover: hover) {
   .cardOverlayFab-primary:hover { background: rgb(var(--lf-accent)) !important; box-shadow: 0 0 16px rgba(var(--lf-accent), .7) !important; transform: scale(1.08); }
-  .cardOverlayFab-primary:hover * { color: #fff !important; }
+  .cardOverlayFab-primary:hover * { color: rgb(var(--lf-on-accent)) !important; }
 }
 
 /* Boutons vu / aimé / plus : en haut à gauche, "plus" en premier, plus petits */
@@ -242,7 +247,7 @@ header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge
 .cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) button :is(.material-icons, svg) { filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .45)) drop-shadow(0 0 12px rgba(0, 0, 0, .3)); }
 @media (hover: hover) {
   .cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) button:hover { background: rgb(var(--lf-accent)) !important; box-shadow: 0 0 14px rgba(var(--lf-accent), .7) !important; transform: scale(1.08); }
-  .cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) button:hover * { color: #fff !important; }
+  .cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) button:hover * { color: rgb(var(--lf-on-accent)) !important; }
   .cardOverlayContainer :is(.cardOverlayButton-br, .MuiButtonGroup-root) button:hover :is(.material-icons, svg) { filter: none; }
 }
 
@@ -252,7 +257,7 @@ header.MuiAppBar-root .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge
   background: rgb(var(--lf-accent)) !important;
   border-radius: 50% !important; width: 1.9em !important; min-width: 1.9em !important; height: 1.9em !important;
   line-height: 1 !important; font-size: 12px; padding: 0 !important;
-  display: inline-flex !important; align-items: center; justify-content: center; box-sizing: border-box;
+  color: rgb(var(--lf-on-accent)) !important; display: inline-flex !important; align-items: center; justify-content: center; box-sizing: border-box;
   box-shadow: 0 2px 6px rgba(0, 0, 0, .25), 0 6px 18px rgba(0, 0, 0, .45) !important;
 }
 
@@ -535,9 +540,9 @@ html[data-lf-login="left"] #loginPage .readOnlyContent { left: 7vw; right: auto;
 #loginPage .manualLoginForm .checkboxLabel { color: rgba(255, 255, 255, .75) !important; font-size: .85rem; }
 #loginPage .manualLoginForm .checkboxOutline { border-radius: 7px !important; border-color: rgba(255, 255, 255, .3) !important; }
 #loginPage .manualLoginForm .emby-checkbox:checked + span + .checkboxOutline { background: rgb(var(--lf-accent)) !important; border-color: rgb(var(--lf-accent)) !important; box-shadow: 0 0 10px rgba(var(--lf-accent), .5); }
-#loginPage .manualLoginForm .checkboxIcon { color: #fff !important; }
+#loginPage .manualLoginForm .checkboxIcon { color: rgb(var(--lf-on-accent)) !important; }
 #loginPage .manualLoginForm button.button-submit {
-  border-radius: 999px !important; margin: 0 0 10px !important; padding: 12px !important; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; color: #fff !important;
+  border-radius: 999px !important; margin: 0 0 10px !important; padding: 12px !important; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; color: rgb(var(--lf-on-accent)) !important;
   background: linear-gradient(135deg, rgba(255, 255, 255, .22) 0%, rgba(255, 255, 255, 0) 60%), rgb(var(--lf-accent)) !important;
   border: 1px solid rgba(255, 255, 255, .18) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 6px 18px rgba(var(--lf-accent), .35) !important;
   transition: transform .25s, box-shadow .25s !important;
@@ -799,7 +804,7 @@ body { --lf-ribbon-up: 7.2rem; --lf-logo-gap: 16px; }
 .dialog :is(.emby-input, .emby-select, .emby-textarea):focus { border-color: rgba(var(--lf-accent), .7) !important; box-shadow: 0 0 0 3px rgba(var(--lf-accent), .18) !important; outline: none !important; }
 .dialog .inputLabel, .dialog .selectLabel { color: rgba(255, 255, 255, .6) !important; }
 .dialog .raised { border-radius: 999px !important; text-transform: uppercase; letter-spacing: .06em; font-size: .8rem; transition: transform .25s, box-shadow .25s, border-color .25s, color .25s !important; }
-.dialog .raised.button-submit { background: linear-gradient(135deg, rgba(255, 255, 255, .22) 0%, rgba(255, 255, 255, 0) 60%), rgb(var(--lf-accent)) !important; color: #fff !important; border: 1px solid rgba(255, 255, 255, .18) !important; box-shadow: 0 6px 18px rgba(var(--lf-accent), .3) !important; }
+.dialog .raised.button-submit { background: linear-gradient(135deg, rgba(255, 255, 255, .22) 0%, rgba(255, 255, 255, 0) 60%), rgb(var(--lf-accent)) !important; color: rgb(var(--lf-on-accent)) !important; border: 1px solid rgba(255, 255, 255, .18) !important; box-shadow: 0 6px 18px rgba(var(--lf-accent), .3) !important; }
 .dialog .raised.button-submit:hover { transform: scale(1.03); box-shadow: 0 0 18px rgba(var(--lf-accent), .6) !important; }
 .dialog .raised:not(.button-submit) { background: transparent !important; border: 1px solid rgba(255, 255, 255, .14) !important; color: rgba(255, 255, 255, .8) !important; }
 .dialog .raised:not(.button-submit):hover { border-color: rgba(255, 255, 255, .3) !important; color: #fff !important; }
@@ -819,11 +824,10 @@ body { --lf-ribbon-up: 7.2rem; --lf-logo-gap: 16px; }
 /* Résumé et infos sous les boutons, puis "À suivre", puis les saisons */
 #itemDetailPage .detailSection > :is(.verticalSection, .collectionItems) { order: 5; }
 #itemDetailPage .nextUpSection { margin-top: 26px !important; }
-/* Saisons : une rangée qui défile, sans barre, fondu discret à droite, sans nom */
+/* Saisons : une rangée qui défile, sans barre, sans nom, coupée net au bord (pas de fondu : sous Firefox il disparaît au survol d'une carte) */
 #itemDetailPage #listChildrenCollapsible :has(> .card) {
   display: flex !important; flex-wrap: nowrap !important; overflow-x: auto; overflow-y: hidden; padding: 4px 0 14px;
   scroll-snap-type: x proximity; scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 90px), rgba(0, 0, 0, .25)); mask-image: linear-gradient(to right, #000 calc(100% - 90px), rgba(0, 0, 0, .25));
 }
 #itemDetailPage #listChildrenCollapsible :has(> .card)::-webkit-scrollbar { display: none; }
 #itemDetailPage #listChildrenCollapsible .card { flex: 0 0 auto !important; width: 161px !important; scroll-snap-align: start; }
@@ -840,14 +844,23 @@ body { --lf-ribbon-up: 7.2rem; --lf-logo-gap: 16px; }
 #itemDetailPage .nameContainer { display: flex !important; flex-direction: column; align-items: flex-start; }
 #itemDetailPage h1.parentName { font-size: 1.32rem !important; margin: 0 0 8px !important; line-height: 1 !important; }
 #itemDetailPage h1.parentName a {
-  display: inline-flex !important; align-items: center; gap: 8px; padding: 4px 0 !important; text-transform: uppercase; letter-spacing: .05em; font-weight: 500;
+  display: inline-flex !important; align-items: center; gap: 8px; padding: 4px 0 !important;
+  height: 36px; box-sizing: border-box; /* même hauteur pour le lien de Jellyfin (emby-linkbutton, 43 px) et celui du script (34 px) */ text-transform: uppercase; letter-spacing: .05em; font-weight: 500;
   color: #fff !important; text-shadow: none !important; text-decoration: none !important; background: none !important; border: 0 !important; transition: color .25s, transform .25s !important;
 }
 #itemDetailPage h1.parentName a::before { content: "arrow_back"; font-family: "Material Icons"; font-size: 26px; text-transform: none; letter-spacing: 0; font-weight: 400; }
 @media (hover: hover) { #itemDetailPage h1.parentName a:hover { color: rgb(var(--lf-accent)) !important; transform: translateX(-4px); text-decoration: none !important; } }
+/* [script] Au-dessus du logo : le script mesure la hauteur réellement dessinée du logo (--lf-logo-h, classe lf-logo-ok).
+   Le bas du logo est à --lf-logo-gap du bloc titre : le lien se pose --lf-back-gap au-dessus du haut du logo. Sans script : lien sous le logo, comme avant. */
+#itemDetailPage { --lf-back-gap: 12px; }
+#itemDetailPage.lf-logo-ok:has(.detailLogo:not(.hide)) .detailRibbon { position: relative; }
+#itemDetailPage.lf-logo-ok:has(.detailLogo:not(.hide)) .detailRibbon h1.parentName {
+  position: absolute !important; left: 4.5vw; right: 4.5vw; margin: 0 !important;
+  bottom: calc(100% + var(--lf-logo-gap) + var(--lf-logo-h) + var(--lf-back-gap));
+}
 /* Titre de la saison en grand */
 #itemDetailPage .nameContainer h3.itemName { margin: 4px 0 0 !important; padding-left: 0 !important; font-size: 2.2rem !important; font-weight: 800 !important; color: #fff !important; opacity: 1 !important; letter-spacing: -.015em; line-height: 1.1 !important; }
-/* Liste des épisodes "façon Netflix" (par défaut) ; la grille reste dispo via html[data-lf-ep="grid"] (futur bouton JS) */
+/* Liste des épisodes "façon Netflix" (par défaut) ; la grille via html[data-lf-ep="grid"] (bouton « Infos / Grille » du script, fonction 15) */
 #itemDetailPage #childrenContent .listItem-bottomoverview, #itemDetailPage #childrenContent .listItemMediaInfo .endsAt { display: none !important; }
 #itemDetailPage #childrenContent > .itemsContainer { margin-left: 0 !important; padding-right: 0 !important; }
 #itemDetailPage:has(#childrenContent .listItem) .detailPagePrimaryContent { padding-right: 4.5vw !important; }
@@ -858,7 +871,8 @@ body { --lf-ribbon-up: 7.2rem; --lf-logo-gap: 16px; }
 #itemDetailPage #childrenContent .listItemMediaInfo { color: rgba(255, 255, 255, .5) !important; font-size: .8rem; }
 #itemDetailPage #childrenContent .listViewUserDataButtons { opacity: .35; transition: opacity .25s; }
 #itemDetailPage #childrenContent .listItem:hover .listViewUserDataButtons { opacity: 1; }
-html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent > .itemsContainer { margin-left: -14px !important; margin-right: -14px !important; max-width: none !important; }
+/* La rangée des saisons (fiche série) est aussi un #childrenContent > .itemsContainer : elle garde ces marges dans les deux modes */
+html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent > .itemsContainer, #itemDetailPage #childrenContent > .itemsContainer:not(:has(> .listItem)) { margin-left: -14px !important; margin-right: -14px !important; max-width: none !important; }
 html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItem { padding: 12px 14px !important; margin: 0 !important; border: 0 !important; border-bottom: 1px solid rgba(255, 255, 255, .07) !important; border-radius: 0; }
 html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemImage { height: 130px !important; width: auto !important; aspect-ratio: 16 / 9; flex-shrink: 0; }
 html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemBody { display: grid !important; grid-template-columns: 1fr auto; column-gap: 16px; align-content: start; padding-left: 22px !important; padding-top: 10px !important; }
@@ -866,7 +880,8 @@ html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemBodyText
 html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemMediaInfo { grid-column: 2; grid-row: 1; justify-self: end; }
 html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItemMediaInfo .starRatingContainer { display: none !important; }
 html:not([data-lf-ep="grid"]) #itemDetailPage #childrenContent .listItem-overview { grid-column: 1 / -1; grid-row: 2; margin-top: 6px !important; font-size: .82rem; line-height: 1.45; color: rgba(255, 255, 255, .6) !important; display: -webkit-box !important; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal !important; }
-html[data-lf-ep="grid"] #itemDetailPage #childrenContent > .itemsContainer { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 22px 18px; }
+/* Grille : seulement pour une liste d'épisodes (:has(> .listItem)), jamais pour la rangée des saisons */
+html[data-lf-ep="grid"] #itemDetailPage #childrenContent > .itemsContainer:has(> .listItem) { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 22px 18px; }
 html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listItem { padding: 0 !important; margin: 0 !important; border: 0 !important; background: none !important; overflow: visible !important; contain: none !important; }
 html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listItem:hover { z-index: 2; }
 html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listItem-content { flex-direction: column !important; align-items: stretch !important; }
@@ -880,7 +895,7 @@ html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButton
 html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButtons .material-icons { filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .6)) drop-shadow(0 0 12px rgba(0, 0, 0, .35)); }
 @media (hover: hover) {
   html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButtons button:hover { background: rgb(var(--lf-accent)) !important; box-shadow: 0 0 14px rgba(var(--lf-accent), .7) !important; transform: scale(1.08); }
-  html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButtons button:hover .material-icons { filter: none; color: #fff !important; }
+  html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButtons button:hover .material-icons { filter: none; color: rgb(var(--lf-on-accent)) !important; }
 }
 /* Bouton lecture des vignettes : invisible, blanc au survol de l'épisode, accent au survol du bouton */
 #itemDetailPage #childrenContent .listItemImageButton {
@@ -891,7 +906,7 @@ html[data-lf-ep="grid"] #itemDetailPage #childrenContent .listViewUserDataButton
 #itemDetailPage #childrenContent .listItemImageButton-icon { font-size: 1.5em !important; filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .6)) drop-shadow(0 0 12px rgba(0, 0, 0, .35)); }
 @media (hover: hover) {
   #itemDetailPage #childrenContent .listItemImageButton:hover { background: rgb(var(--lf-accent)) !important; box-shadow: 0 0 14px rgba(var(--lf-accent), .7) !important; transform: scale(1.08); }
-  #itemDetailPage #childrenContent .listItemImageButton:hover .listItemImageButton-icon { filter: none; }
+  #itemDetailPage #childrenContent .listItemImageButton:hover .listItemImageButton-icon { filter: none; color: rgb(var(--lf-on-accent)) !important; }
 }
 /* Apparition des épisodes, saisons et rangées */
 #itemDetailPage .detailSection > .verticalSection:not(.hide), #itemDetailPage .detailPageSecondaryContainer > .verticalSection { animation: lfRowIn 1s cubic-bezier(.16, 1, .3, 1) both; }
@@ -1186,7 +1201,8 @@ html[data-lf-subbg="none"] .videoSubtitles .videoSubtitlesInner { background: no
   margin: 0 0 6px !important; font-size: .74rem !important; font-weight: 600 !important; line-height: 1.3;
   text-transform: uppercase; letter-spacing: .08em; color: rgba(255, 255, 255, .6) !important;
 }
-.upNextDialog .upNextDialog-countdownText { color: rgb(var(--lf-accent)) !important; font-weight: 700; font-variant-numeric: tabular-nums; }
+.upNextDialog .upNextDialog-countdownText { color: rgb(var(--lf-accent)) !important; font-weight: 700; font-variant-numeric: tabular-nums;
+  display: inline-block; min-width: 11ch; } /* place réservée : la carte ne change plus de largeur pendant le décompte (« 10 secondes » → « 9 secondes ») */
 .upNextDialog .upNextDialog-title { width: auto !important; margin: 0 0 4px !important; font-size: 1.05rem !important; font-weight: 700 !important; line-height: 1.3; }
 .upNextDialog :is(.upNextDialog-mediainfo, .btnHide) { display: none !important; } /* épuré : ni infos (année, durée, note) ni « Masquer » */
 /* [script] le titre « Série - S2:E2 - Nom » est réécrit en « 2. Nom » par leoflix.js */
@@ -1341,15 +1357,32 @@ html:not(.layout-tv) #itemDetailPage .detailLogo:not(.hide) { display: block !im
    logo + bibliothèques défilent horizontalement, les icônes et l'avatar restent à droite */
 @media (max-width: 1199.98px) {
   header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root:has(> .MuiStack-root) { flex-wrap: nowrap !important; }
-  header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root {
-    flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; overscroll-behavior-x: contain;
-    padding: 10px 4px !important; margin: -10px 0 !important; /* place pour le survol et le halo */
-    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
-  }
-  header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root::-webkit-scrollbar { display: none; }
-  header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root > * { flex-shrink: 0; }
-  header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiBox-root { flex: 0 0 auto !important; }
 }
+/* Ligne des bibliothèques : elle ne défile que si elle déborde, sinon les ombres et le halo sortent librement.
+   Sans script : défile toujours sous 1200 px. Avec script : défile seulement quand il mesure un débordement (classe lf-scrolls). */
+header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root {
+  flex: 1 1 auto; min-width: 0; scrollbar-width: none; overscroll-behavior-x: contain;
+  padding: 12px 4px !important; margin: -12px 16px -12px 0 !important; /* place pour le survol et le halo ; 16 px avant les icônes */
+}
+@media (max-width: 1199.98px) { header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root:not(.lf-js) { overflow-x: auto; overflow-y: hidden; } }
+header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root.lf-scrolls { overflow-x: auto; overflow-y: hidden; }
+/* Quand elle défile, les bords coupent ce qui dépasse : ombre et halo plus courts pour tenir dans la marge de 12 px */
+header.MuiAppBar-root .MuiToolbar-root > .MuiStack-root:is(.lf-scrolls, :not(.lf-js)) > a.MuiButton-root:not(.MuiButton-sizeLarge) {
+  --lf-g1-shadow: 0 2px 6px rgba(0, 0, 0, .3);
+  --lf-halo: 0 0 6px rgba(var(--lf-accent), .55), 0 0 10px rgba(var(--lf-accent), .2);
+}
+header.MuiAppBar-root .MuiToolbar-root > .MuiStack-root:is(.lf-scrolls, :not(.lf-js)) > a.MuiButton-root:not(.MuiButton-sizeLarge):hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-g1-sheen) + .08)), var(--lf-halo), 0 4px 8px rgba(0, 0, 0, .4) !important;
+}
+header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root::-webkit-scrollbar { display: none; }
+header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root > * { flex-shrink: 0; }
+header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiBox-root { flex: 0 0 auto !important; }
+/* [script] Fondu à droite seulement quand la ligne déborde vraiment (classe lf-scrolls) */
+header.MuiAppBar-root:not(.videoOsd-appBar) .MuiToolbar-root > .MuiStack-root.lf-scrolls {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+/* [script] Toutes les bibliothèques sont dans la ligne : « Plus » ne sert plus */
+header.MuiAppBar-root .MuiToolbar-root > .MuiStack-root.lf-all-views > button[aria-controls="user-view-overflow-menu"] { display: none !important; }
 
 /* Mode mobile : pas de bouton lecture permanent sur les vignettes (on touche la vignette, on lance depuis la fiche) */
 .layout-mobile :is(.cardOverlayButton[data-action="play"]:not(.cardOverlayButton-hover), .cardOverlayButton-centered) { display: none !important; }
@@ -1366,9 +1399,146 @@ html:not(.layout-tv) #itemDetailPage .detailLogo:not(.hide) { display: block !im
 .layout-mobile #itemDetailPage #itemBackdrop {
   -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%); mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
 }
-/* Logo calé sur le titre (en mobile : image décalée de 3rem, pas de remontée fixe du bloc titre), plus large sur petit écran */
+/* Image de fond sous la barre du haut : Jellyfin la remonte de 48 px (sa barre), celle de LeoFlix fait 68 px (--lf-hero-pull) */
+.layout-mobile #itemDetailPage #itemBackdrop { margin-top: calc(-1 * var(--lf-hero-pull)) !important; }
+/* Logo calé sur le titre (en mobile : image remontée de --lf-hero-pull, pas de remontée fixe du bloc titre), plus large sur petit écran.
+   (validé sur téléphone) */
 .layout-mobile #itemDetailPage .detailLogo {
-  top: calc(3rem + 32 * var(--lf-vh) - var(--lf-logo-gap)) !important; width: min(460px, 70vw) !important;
+  top: calc(32 * var(--lf-vh) - var(--lf-hero-pull) - var(--lf-logo-gap)) !important; width: min(460px, 70vw) !important;
 }
 /* « À suivre » : texte un peu plus près du bord sur les petites vignettes */
 .layout-mobile .card[data-type="Episode"] .cardBox > .cardText { padding-left: 12px !important; padding-right: 10px !important; }
+
+/* ==========================================================
+   v0.38 : éléments ajoutés par le script (leoflix.js)
+   ========================================================== */
+/* [script] Accueil : bibliothèque illustrée par un de ses médias au hasard (l'image de Jellyfin a le nom imprimé dedans) */
+.card.lf-lib .cardScalable > .cardImageContainer { opacity: 0 !important; }
+.cardScalable > .lf-libimg {
+  position: absolute; inset: 0; border-radius: var(--lf-card-radius); overflow: hidden; pointer-events: none;
+  background: #0b0c10 center / cover no-repeat; opacity: 0; transition: opacity .6s var(--lf-ease);
+}
+.cardScalable > .lf-libimg.lf-on { opacity: 1; }
+.cardScalable > .lf-libimg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, .7) 0%, rgba(0, 0, 0, .15) 45%, transparent 70%); }
+/* Nom en bas à gauche, au-dessus du voile de survol */
+.cardScalable > .lf-libname {
+  position: absolute; left: 16px; right: 12px; bottom: 12px; z-index: 7; pointer-events: none;
+  color: #fff; font-size: 1.4rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px rgba(0, 0, 0, .8), 0 0 14px rgba(0, 0, 0, .5);
+}
+.card:not(.lf-lib) .cardScalable > .lf-libname { display: none; }
+
+/* [script] Menu épisodes : toute la ligne est cliquable (le script lance l'épisode) ; survol de la ligne entière,
+   numéro d'épisode compris */
+@media (hover: hover) {
+  #popupFocusContainer #popupContentContainer .previewListItem:has(.previewItemContainer:hover) .previewItemTitle :is(span, .actionSheetItemText) {
+    color: rgb(var(--lf-accent)) !important; opacity: 1 !important;
+  }
+}
+#popupFocusContainer #popupContentContainer .previewItemContainer { cursor: pointer; }
+
+/* [script] Page saison : carte « Reprendre / À suivre » au-dessus de la liste des épisodes */
+#itemDetailPage .lf-resume { display: flex; gap: 24px; align-items: center; margin: 4px 0 28px; animation: lfRowIn .7s cubic-bezier(.16, 1, .3, 1) both; }
+#itemDetailPage .lf-resume-img {
+  position: relative; flex: 0 0 min(420px, 42%); aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; cursor: pointer;
+  background: #0b0c10 center / cover no-repeat; box-shadow: var(--lf-card-rest);
+  transition: transform .45s var(--lf-ease), box-shadow .3s;
+}
+/* Survol : se soulève et grandit un peu, comme les vignettes (pas de verre ici, donc pas de souci Firefox) */
+@media (hover: hover) { #itemDetailPage .lf-resume-img:hover { transform: translateY(var(--lf-lift)) scale(1.03); box-shadow: var(--lf-card-halo); } }
+/* Bouton lecture au centre de l'image : visible au survol, couleur du thème quand on le vise */
+#itemDetailPage .lf-resume-fab {
+  position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 40px !important; color: #fff; text-transform: none;
+  background: rgba(8, 9, 13, .55); border: 1px solid rgba(255, 255, 255, .2); box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+  opacity: 0; transition: opacity .25s, background .25s, border-color .25s;
+}
+#itemDetailPage .lf-resume-img:hover .lf-resume-fab { opacity: 1; }
+#itemDetailPage .lf-resume-img:hover .lf-resume-fab:hover { background: rgb(var(--lf-accent)); color: rgb(var(--lf-on-accent)); border-color: transparent; }
+@media (hover: none) { #itemDetailPage .lf-resume-fab { opacity: .9; } }
+#itemDetailPage .lf-resume-prog { position: absolute; left: 14px; right: 14px; bottom: 12px; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, .22); box-shadow: 0 2px 8px rgba(0, 0, 0, .5); }
+#itemDetailPage .lf-resume-prog > div {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, rgb(var(--lf-accent-alt)) 0%, color-mix(in srgb, rgb(var(--lf-accent-alt)) var(--lf-pg-end), #fff) 100%);
+  box-shadow: 0 0 var(--lf-pg-g1) rgba(var(--lf-accent-alt), var(--lf-pg-a1)), 0 0 var(--lf-pg-g2) rgba(var(--lf-accent-alt), var(--lf-pg-a2));
+}
+#itemDetailPage .lf-resume-body { min-width: 0; flex: 1 1 auto; max-width: 620px; }
+#itemDetailPage .lf-resume-kicker { font-size: .74rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgb(var(--lf-accent)); margin-bottom: 6px; }
+#itemDetailPage .lf-resume-title { font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.25; color: #fff; }
+#itemDetailPage .lf-resume-meta { margin-top: 4px; font-size: .85rem; color: rgba(255, 255, 255, .6); }
+#itemDetailPage .lf-resume-ov {
+  margin-top: 10px; font-size: .88rem; line-height: 1.5; color: rgba(255, 255, 255, .72);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* Bouton : même capsule en verre que « Lecture » sur la fiche, soulèvement sans transform (Firefox) */
+#itemDetailPage .lf-resume-play {
+  all: unset; box-sizing: border-box; position: relative; top: 0; margin-top: 26px; display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 32px 14px 22px; border-radius: var(--lf-r-pill); cursor: pointer; color: #fff;
+  font-size: .95rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  background: var(--lf-g1); backdrop-filter: var(--lf-g1-filter); -webkit-backdrop-filter: var(--lf-g1-filter);
+  border: var(--lf-g1-line); box-shadow: var(--lf-g1-box);
+  transition: top .3s var(--lf-ease), border-color .3s, box-shadow .3s, color .3s, text-shadow .3s;
+}
+#itemDetailPage .lf-resume-play .material-icons { font-size: 28px; text-transform: none; letter-spacing: 0; } /* les icônes ne marchent qu'en minuscules */
+@media (hover: hover) {
+  #itemDetailPage .lf-resume-play:hover {
+    top: calc(-1 * var(--lf-btn-lift)); color: rgb(var(--lf-accent)); text-shadow: 0 0 10px rgba(var(--lf-accent), .8);
+    border-color: rgba(var(--lf-accent), var(--lf-edge-a));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lf-g1-sheen) + .08)), var(--lf-halo), 0 calc(8px + var(--lf-btn-lift) * 2) 26px rgba(0, 0, 0, .55);
+  }
+}
+#itemDetailPage .lf-resume-play:focus-visible { outline: 2px solid rgb(var(--lf-accent)); outline-offset: 3px; }
+/* Écran étroit : image au-dessus du texte */
+@media (max-width: 700px) {
+  #itemDetailPage .lf-resume { flex-direction: column; align-items: stretch; gap: 14px; }
+  #itemDetailPage .lf-resume-img { flex-basis: auto; width: 100%; }
+}
+/* Quand la carte « Reprendre / À suivre » est là, le gros bouton « Lecture » de la saison fait doublon :
+   il disparaît, les petits boutons de la saison (déjà vu, favori, « … ») restent. Sans carte (tout vu), il revient. */
+#itemDetailPage:has(.lf-resume) .mainDetailButtons .btnPlay { display: none !important; }
+/* Flèches de la rangée des saisons (script, fonction 14) : en haut à droite de la section, ordinateur seulement.
+   Le style des boutons vient de la règle commune des flèches (.emby-scrollbuttons-button). */
+#itemDetailPage #listChildrenCollapsible.lf-has-nav { position: relative; }
+#itemDetailPage .lf-season-nav { position: absolute; top: 0; right: 0; display: flex; gap: 4px; z-index: 2; padding: 0 !important; }
+#itemDetailPage .lf-season-nav[hidden], .layout-mobile #itemDetailPage .lf-season-nav { display: none !important; }
+@media (hover: none) { #itemDetailPage .lf-season-nav { display: none !important; } }
+/* Bouton « Infos / Grille » des épisodes (script, fonction 15) : une icône à droite, au-dessus de la liste (style des flèches) */
+#itemDetailPage #childrenContent > .lf-ep-toggle { position: static !important; display: flex; justify-content: flex-end; gap: 2px; padding: 0 !important; margin: 0 0 6px !important; }
+/* [script] Capsules de la barre du haut (fonction 16) : une capsule en verre léger par groupe de boutons,
+   dessinée en ::before (groupe 1) et ::after (groupe 2) de chaque barre, à la place mesurée par le script. */
+header.MuiAppBar-root .MuiToolbar-root.lf-caps { position: relative; isolation: isolate; }
+header.MuiAppBar-root .MuiToolbar-root.lf-caps::before, header.MuiAppBar-root .MuiToolbar-root.lf-caps::after {
+  content: ""; position: absolute; z-index: -1; pointer-events: none; box-sizing: border-box; border-radius: var(--lf-r-pill);
+  background: var(--lf-g1); backdrop-filter: var(--lf-g1-filter); -webkit-backdrop-filter: var(--lf-g1-filter);
+  border: var(--lf-g1-line); box-shadow: var(--lf-g1-box); transition: opacity .2s;
+}
+header.MuiAppBar-root .MuiToolbar-root.lf-caps::before { left: var(--lf-c1-x, 0); top: var(--lf-c1-y, 0); width: var(--lf-c1-w, 0); height: var(--lf-c1-h, 0); opacity: var(--lf-c1-o, 0); }
+header.MuiAppBar-root .MuiToolbar-root.lf-caps::after { left: var(--lf-c2-x, 0); top: var(--lf-c2-y, 0); width: var(--lf-c2-w, 0); height: var(--lf-c2-h, 0); opacity: var(--lf-c2-o, 0); }
+/* Les boutons des bibliothèques n'ont plus leur capsule à eux ; au survol : couleur d'accent, halo du texte, montée
+   (:not(#lf-x) ne cible rien de plus : il donne le poids d'un id, pour passer devant la règle commune du survol
+   des boutons en verre, dont le :is(...) contient #itemDetailPage et pèse donc autant qu'un id) */
+header.MuiAppBar-root .MuiToolbar-root.lf-caps > .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge):not(#lf-x),
+header.MuiAppBar-root .MuiToolbar-root.lf-caps > .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge):not(#lf-x):hover {
+  background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  border-color: transparent !important; box-shadow: none !important;
+}
+/* Pages bibliothèque : le dégradé sombre en haut n'est plus utile avec les capsules */
+header.MuiAppBar-root.lf-caps-lib::before { display: none !important; }
+/* Survol dans les capsules = celui des outils (filtre, tri…) : couleur d'accent + léger agrandissement, icône lumineuse.
+   Plus de montée ni d'agrandissement par les marges pour les bibliothèques. (:not(#lf-x) : voir plus haut) */
+header.MuiAppBar-root .MuiToolbar-root.lf-caps > .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge):not(#lf-x),
+header.MuiAppBar-root .MuiToolbar-root.lf-caps > .MuiBox-root .MuiIconButton-root:not(#lf-x) {
+  transition: color .25s, transform .25s, text-shadow .25s !important;
+}
+@media (hover: hover) {
+  header.MuiAppBar-root .MuiToolbar-root.lf-caps > .MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge):not(#lf-x):hover {
+    top: 0 !important; padding: 9px 18px !important; margin: 0 7px !important;
+    color: rgb(var(--lf-accent)) !important; text-shadow: none !important; transform: scale(var(--lf-hover-capsule)); /* 1.08 : plus doux que les icônes */
+  }
+  header.MuiAppBar-root .MuiToolbar-root.lf-caps > .MuiBox-root .MuiIconButton-root:not(#lf-x):hover {
+    background: none !important; color: rgb(var(--lf-accent)) !important; transform: scale(var(--lf-hover-icon));
+  }
+  header.MuiAppBar-root .MuiToolbar-root.lf-caps > :is(.MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge), .MuiBox-root .MuiIconButton-root):hover :is(svg, .MuiAvatar-root) {
+    filter: drop-shadow(0 0 6px rgba(var(--lf-accent), .7));
+  }
+}

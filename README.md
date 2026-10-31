@@ -8,17 +8,28 @@ Deux morceaux : une feuille de style (`leoflix.css`) et un petit script facultat
 Dans Jellyfin : **Tableau de bord > Slogan > Code CSS personnalisé**, mettre uniquement :
 
 ```css
-@import url('https://cdn.jsdelivr.net/gh/LeonardSav/Jellyfin_Skin_Leo@v0.37/leoflix.css');
+@import url('https://cdn.jsdelivr.net/gh/LeonardSav/Jellyfin_Skin_Leo@v0.38/leoflix.css');
 ```
 
-Pour mettre à jour, changer seulement le numéro de version (`@v0.37`), puis Ctrl+F5.
+Pour mettre à jour, changer seulement le numéro de version (`@v0.38`), puis Ctrl+F5.
 Une version publiée ne change jamais : on choisit quand passer à la suivante.
 
 ## 2. Le script (facultatif, recommandé)
 
-Sans script, le thème marche, mais dans le lecteur :
-les menus restent calés à droite au lieu d'être centrés sur leur bouton,
-et sous Firefox le glisser du volume et de la barre de progression est peu fiable.
+Sans script, le thème marche. Le script ajoute :
+- **Lecteur** : menus centrés sur leur bouton ; glisser fiable du volume et de la barre de progression (Firefox) ;
+  noms clairs des pistes (« English · Stereo », « French · SDH ») ; « Désactivé » en tête des sous-titres ;
+  interrupteur du fond des sous-titres ; clic sur un épisode du menu épisodes = lecture ; titre court dans la carte « Épisode suivant ».
+- **Navigation** : toutes les bibliothèques dans la barre du haut ; une capsule en verre par groupe de boutons ;
+  bibliothèques illustrées sur l'accueil ; liens « ← Bibliothèque » et retour à la série au-dessus du logo.
+- **Séries** : carte « Reprendre / À suivre » en haut de la saison ; flèches sur la rangée des saisons ;
+  bouton « Infos / Grille » pour les épisodes.
+- **Menu LeoFlix** (menu de l'avatar) : thème activé / désactivé et couleur d'accent.
+  Ces choix (et Infos / Grille, fond des sous-titres) sont mémorisés **par compte**, sur le serveur.
+- **Nouvel appareil** : réglages de base (sous-titres, bouton « Passer » pour les résumés et aperçus)
+  seulement si l'appareil n'a encore rien choisi ; un choix existant n'est jamais modifié.
+
+Chaque fonction peut être coupée dans le bloc « Réglages » (`CONFIG`) en tête du script.
 
 **Installer le plugin JavaScript Injector**
 1. Tableau de bord > Extensions > Catalogue > ⚙️ > ➕, nom « n00bcodr », adresse :
@@ -59,6 +70,7 @@ Pour revenir en arrière, remettre le dossier à sa place et redémarrer.
 - **File Transformation** : nécessaire dans Docker pour les plugins qui modifient la page web.
 - **Editor's Choice** : bandeau du film en tête sur l'accueil.
 - **InPlayerEpisodePreview** : menu des épisodes dans le lecteur (le thème le stylise s'il est là).
+- **TheIntroDB** : repère intros, résumés, génériques et aperçus (bouton « Passer »).
 - **JavaScript Injector** : pour `leoflix.js` (voir plus haut).
 
 ## Navigateurs
@@ -70,6 +82,7 @@ Dans l'appli Android, le lecteur vidéo par défaut est natif : il garde l'appar
 Les textes ajoutés par le thème (« Reprendre », noms de qualité…) suivent la langue de Jellyfin :
 français si l'interface est en français, anglais sinon.
 
-## Crédits
+## Crédits et licence
 
 Police : DM Sans (SIL Open Font License 1.1), via Fontsource.
+Thème et script : licence MIT (voir `LICENSE`).
