@@ -1,7 +1,9 @@
 /* ==========================================================
-   LeoFlix : thème Jellyfin maison (v0.38)
+   LeoFlix : thème Jellyfin maison (v0.39)
    Base : thème sombre d'origine de Jellyfin 12.4, sans import externe
    Validé : accueil, connexion, bibliothèques, fiche film, fiche série, page saison, lecteur
+   v0.39 : stopgap TV (appli LG, webOS) — voir fin de fichier : coupe le flou et les animations sous
+           .layout-tv, trop lourds pour la puce de la TV. En attendant la box TV dédiée (Black Friday).
    v0.38 : survol des vignettes plus doux ; rangée des saisons sans fondu (Firefox le perdait) ; styles pour le script v0.38
            (flèches des saisons, Infos / Grille, carte « Reprendre », capsules de la barre du haut, menu LeoFlix…).
            Mobile : image de la fiche sous la barre du haut, logo calé sur le titre, marge avant les icônes de la barre.
@@ -1541,4 +1543,22 @@ header.MuiAppBar-root .MuiToolbar-root.lf-caps > .MuiBox-root .MuiIconButton-roo
   header.MuiAppBar-root .MuiToolbar-root.lf-caps > :is(.MuiStack-root > a.MuiButton-root:not(.MuiButton-sizeLarge), .MuiBox-root .MuiIconButton-root):hover :is(svg, .MuiAvatar-root) {
     filter: drop-shadow(0 0 6px rgba(var(--lf-accent), .7));
   }
+}
+
+/* ---------- v0.39 : stopgap TV (appli LG, webOS) ----------
+   Jellyfin pose .layout-tv sur <html> pour les clients TV (déjà utilisé ligne ~1354).
+   Le verre dépoli (backdrop-filter) et les animations sont trop lourds pour la puce de la TV
+   (appli lente, saccadée). On coupe tout ça uniquement sous .layout-tv : les trois niveaux de
+   verre passent par ces variables partout dans le fichier, donc les redéfinir ici suffit à les
+   neutraliser globalement. :not(#lf-x) ajoute le poids d'un id pour passer devant toute règle
+   !important plus spécifique déjà écrite plus haut (même trick que les capsules de la barre). */
+html.layout-tv {
+  --lf-g1-filter: none; --lf-g2-filter: none; --lf-g3-filter: none;
+  --lf-g1-blur: 0px; --lf-g2-blur: 0px; --lf-g3-blur: 0px;
+}
+html.layout-tv:not(#lf-x), html.layout-tv:not(#lf-x) * {
+  transition: none !important;
+  animation: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
