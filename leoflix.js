@@ -23,6 +23,7 @@
   15. Page saison : bouton « Infos / Grille » pour la liste des épisodes (mémorisé par compte)
   16. Barre du haut : une capsule en verre par groupe de boutons (bibliothèques, icônes, titre, outils)
   17. Nouvel appareil : réglages de base (sous-titres, « passer » résumés et aperçus) s'il n'a rien choisi
+  18. Pages bibliothèque : Tout lire caché, pagination détachée et mise en avant, boutons « Page précédente » / « Page suivante » en tête et fin de grille
 
    Chaque fonction vérifie que ce qu'elle cherche existe ; sinon elle ne fait rien
    (utile si un plugin n'est pas installé ou si Jellyfin change).
@@ -52,7 +53,8 @@
     episodeView: true,     // 15. bouton « Infos / Grille » de la liste des épisodes (par compte)
     headerCapsules: true,  // 16. une capsule en verre par groupe de boutons de la barre du haut
     capsuleLogo: false,    //     le logo dans la capsule des bibliothèques (true) ou à part (false)
-    deviceDefaults: true   // 17. réglages LeoFlix de base sur un appareil qui n'a encore rien choisi
+    deviceDefaults: true,  // 17. réglages LeoFlix de base sur un appareil qui n'a encore rien choisi
+    libraryPaging: true    // 18. bibliothèques : Tout lire caché, pagination détachée, bouton de page suivante
   };
 
   const playerOpen = () => !!document.querySelector('#videoOsdPage:not(.hide)');
@@ -229,13 +231,12 @@
       place(); requestAnimationFrame(place); setTimeout(place, 150);
     });
     // Placer dès qu'un menu apparaît ou change de contenu (avant l'affichage : pas de saut)
-    const hasMenu = n => n.nodeType === 1 && (n.matches(MENU) || n.querySelector(MENU));
     new MutationObserver(muts => {
       if (!lastBtn || !playerOpen()) return;
       for (const mu of muts) {
         const t = mu.target.nodeType === 1 ? mu.target : mu.target.parentElement;
         if ((t && t.closest && t.closest(MENU)) ||
-            [...mu.addedNodes].some(hasMenu)) { place(); return; }
+            [...mu.addedNodes].some(n => n.nodeType === 1 && (n.matches(MENU) || n.querySelector(MENU)))) { place(); return; }
       }
     }).observe(document.body, { childList: true, subtree: true });
     addEventListener('resize', place);
@@ -364,12 +365,10 @@
         const missing = views.filter(v => !nativeIds.has(v.Id));
         // Retirer les copies devenues inutiles
         stack.querySelectorAll(':scope > .lf-view').forEach(c => { if (!missing.some(v => v.Id === c.dataset.id)) c.remove(); });
-        // Type de chaque bouton natif (films, séries…), calculé une fois : on copie un bouton du même type (même icône)
-        const nativeTypes = native.map(a => { const n = views.find(x => x.Id === idFromHref(a.getAttribute('href'))); return n ? n.CollectionType : null; });
         for (const v of missing) {
           if (stack.querySelector(`:scope > .lf-view[data-id="${v.Id}"]`)) continue;
-          const i = nativeTypes.indexOf(v.CollectionType);
-          const c = (i >= 0 ? native[i] : model).cloneNode(true);
+          const same = native.find(a => { const n = views.find(x => x.Id === idFromHref(a.getAttribute('href'))); return n && n.CollectionType === v.CollectionType; });
+          const c = (same || model).cloneNode(true);
           c.classList.add('lf-view'); c.dataset.id = v.Id;
           c.classList.remove('Mui-focusVisible', 'MuiButton-colorPrimary', 'MuiButton-textPrimary');
           c.setAttribute('href', libraryUrl(v));
@@ -602,8 +601,7 @@
       let code = null, ch = null, comment = false, variant = '';
       const flags = new Set(), custom = [];
       for (const raw of text.split(/\s+-\s+/).map(s => s.trim()).filter(Boolean)) {
-        if (/\[(cc|sdh)\]/i.test(raw)) flags.add('sdh');
-        let p = raw.replace(/\s*\[(cc|sdh)\]\s*/ig, ' ').trim();
+        let p = raw.replace(/\s*\[(cc|sdh)\]\s*/ig, () => { flags.add('sdh'); return ' '; }).trim();
         const low = p.toLowerCase(), par = low.match(/^(.+?)\s*\((.+)\)$/);
         const lc = langs().get(low) || (par && langs().get(par[1]));
         if (lc) {
@@ -889,7 +887,20 @@
         mark(t2, 'lf-caps'); mark(hdr, 'lf-caps-lib');
         const title = t2.querySelector(':scope > button'), tools = t2.querySelector(':scope > .MuiStack-root');
         setCap(t2, 1, [title, title.nextElementSibling].filter(e => e && e !== tools), 10, 10);
-        setCap(t2, 2, tools ? [...tools.children] : [], 6, 4);
+        // Fonction 18 active : Précédent/Suivant sortent de cette capsule, ils ont leur propre fond (CSS).
+        // Au niveau des boutons, pas des groupes : Jellyfin range tantôt Filtre/Tri/Vue/Précédent/Suivant
+        // dans un seul MuiButtonGroup, tantôt Précédent/Suivant dans le leur (relevé le 10/11, ça varie).
+        const pageBtns = CONFIG.libraryPaging && tools
+          ? [...tools.querySelectorAll('button:has([data-testid="NavigateBeforeIcon"]), button:has([data-testid="NavigateNextIcon"])')]
+          : [];
+        const toolEls = tools ? [...tools.querySelectorAll('button, a.MuiButton-root')].filter(e => !pageBtns.includes(e)) : [];
+        setCap(t2, 2, toolEls, 6, 4);
+        // Lecture aléatoire (style « contained », plus de marge interne) élargit le bord gauche plus que
+        // Grille/Vue (style icône) ne le fait à droite : on rallonge la capsule à droite pour rééquilibrer.
+        if (pageBtns.length && t2.style.getPropertyValue('--lf-c2-o') === '1') {
+          const w = parseFloat(t2.style.getPropertyValue('--lf-c2-w')) || 0;
+          if (w) put(t2, '--lf-c2-w', Math.round(w + 9) + 'px');
+        }
       } else if (hdr.classList.contains('lf-caps-lib')) hdr.classList.remove('lf-caps-lib');
     };
     onChange(() => update(false));
@@ -922,6 +933,63 @@
           if (localStorage.getItem(u + '-' + name) === null) localStorage.setItem(u + '-' + name, value);
         }
       } catch (e) { /* stockage indisponible : on laisse Jellyfin faire */ }
+    });
+  }
+
+  /* ---------- 18. Pages bibliothèque : pagination mise en avant ----------
+     Tout lire caché, Précédent/Suivant détachés et stylés : CSS seul (sélecteurs par data-testid,
+     indépendants de la langue, voir leoflix.css + la fonction 16 ci-dessus). Ici : la classe qui
+     active ce CSS, et un bouton pleine largeur qui relance le clic natif — « Page suivante » en fin
+     de grille, « Page précédente » en tête — jamais affiché si cette direction n'est pas disponible.
+     syncPageBtn() est partagé par les deux sens pour ne pas dupliquer la logique de recherche/clic. */
+  if (CONFIG.libraryPaging) {
+    document.documentElement.classList.add('lf-paging');
+    const syncPageBtn = opts => {
+      const hdr = document.querySelector('header.MuiAppBar-root:not(.videoOsd-appBar)');
+      const t2 = hdr && [...hdr.querySelectorAll(':scope > .MuiToolbar-root')]
+        .find(tb => tb.querySelector(':scope > button .MuiTypography-h2'));
+      const native = t2 && t2.querySelector(`button:has([data-testid="${opts.testId}"])`);
+      const grid = document.querySelector('.itemsContainer.vertical-wrap');
+      if (!native || native.classList.contains('Mui-disabled') || !grid) {
+        const stray = document.querySelector('.' + opts.cls);
+        if (stray) stray.remove();
+        return;
+      }
+      let btn = grid.querySelector(':scope > .' + opts.cls);
+      if (!btn) {
+        btn = document.createElement('div');
+        btn.className = opts.cls;
+        btn.innerHTML = `<span>${opts.label}</span><span class="lf-pagebtn-count"></span>
+          <svg viewBox="0 0 24 24" width="24" height="24"><path d="${opts.icon}"/></svg>`;
+        btn.addEventListener('click', () => {
+          const b = t2.querySelector(`button:has([data-testid="${opts.testId}"])`);
+          if (b) b.click();
+        });
+      }
+      if (opts.count) {
+        const chip = t2.querySelector('.MuiChip-root');
+        const m = chip && chip.textContent.match(/(\d+)-(\d+)\D+(\d+)/);
+        const n = m ? opts.count(m) : null;
+        const countEl = btn.querySelector('.lf-pagebtn-count');
+        const countTxt = n != null ? opts.countText(n) : '';
+        if (countEl.textContent !== countTxt) countEl.textContent = countTxt;
+      }
+      opts.place(grid, btn);
+    };
+    onChange(() => {
+      syncPageBtn({
+        cls: 'lf-nextpage', testId: 'NavigateNextIcon', label: tr('Page suivante', 'Next page'),
+        icon: 'M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z',
+        count: m => +m[3] - +m[2],
+        countText: n => tr(`— ${n} restant${n > 1 ? 's' : ''}`, `— ${n} left`),
+        place: (grid, btn) => { if (grid.lastElementChild !== btn) grid.appendChild(btn); }
+      });
+      // Page précédente : pas de compteur, « combien avant » est moins utile que « combien après »
+      syncPageBtn({
+        cls: 'lf-prevpage', testId: 'NavigateBeforeIcon', label: tr('Page précédente', 'Previous page'),
+        icon: 'M15.41 7.41 10.83 12l4.58 4.59L14 18l-6-6 6-6z',
+        place: (grid, btn) => { if (grid.firstElementChild !== btn) grid.insertBefore(btn, grid.firstElementChild); }
+      });
     });
   }
 

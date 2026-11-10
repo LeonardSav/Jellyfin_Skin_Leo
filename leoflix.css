@@ -1,9 +1,7 @@
 /* ==========================================================
-   LeoFlix : thème Jellyfin maison (v0.39)
+   LeoFlix : thème Jellyfin maison (v0.38)
    Base : thème sombre d'origine de Jellyfin 12.4, sans import externe
    Validé : accueil, connexion, bibliothèques, fiche film, fiche série, page saison, lecteur
-   v0.39 : stopgap TV (appli LG, webOS) — voir fin de fichier : coupe le flou et les animations sous
-           .layout-tv, trop lourds pour la puce de la TV. En attendant la box TV dédiée (Black Friday).
    v0.38 : survol des vignettes plus doux ; rangée des saisons sans fondu (Firefox le perdait) ; styles pour le script v0.38
            (flèches des saisons, Infos / Grille, carte « Reprendre », capsules de la barre du haut, menu LeoFlix…).
            Mobile : image de la fiche sous la barre du haut, logo calé sur le titre, marge avant les icônes de la barre.
@@ -1545,20 +1543,52 @@ header.MuiAppBar-root .MuiToolbar-root.lf-caps > .MuiBox-root .MuiIconButton-roo
   }
 }
 
-/* ---------- v0.39 : stopgap TV (appli LG, webOS) ----------
-   Jellyfin pose .layout-tv sur <html> pour les clients TV (déjà utilisé ligne ~1354).
-   Le verre dépoli (backdrop-filter) et les animations sont trop lourds pour la puce de la TV
-   (appli lente, saccadée). On coupe tout ça uniquement sous .layout-tv : les trois niveaux de
-   verre passent par ces variables partout dans le fichier, donc les redéfinir ici suffit à les
-   neutraliser globalement. :not(#lf-x) ajoute le poids d'un id pour passer devant toute règle
-   !important plus spécifique déjà écrite plus haut (même trick que les capsules de la barre). */
-html.layout-tv {
-  --lf-g1-filter: none; --lf-g2-filter: none; --lf-g3-filter: none;
-  --lf-g1-blur: 0px; --lf-g2-blur: 0px; --lf-g3-blur: 0px;
+/* ---------- 18. Pages bibliothèque : pagination mise en avant ----------
+   Tout lire caché (Lecture aléatoire suffit), fonction 16 étendue (leoflix.js) pour exclure
+   Précédent/Suivant de la capsule des outils, les flèches reçoivent leur propre fond individuel —
+   visible seulement quand la direction est cliquable — et des boutons en tête/fin de grille
+   reprennent le même geste que Précédent/Suivant. Tout ce bloc est activé par le script
+   (classe html.lf-paging), voir CONFIG.libraryPaging dans leoflix.js. */
+html.lf-paging header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) button:has([data-testid="PlayArrowIcon"]) {
+  display: none !important;
 }
-html.layout-tv:not(#lf-x), html.layout-tv:not(#lf-x) * {
-  transition: none !important;
-  animation: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+html.lf-paging header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) button:has([data-testid="NavigateBeforeIcon"]),
+html.lf-paging header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) button:has([data-testid="NavigateNextIcon"]) {
+  min-width: 42px !important; height: 42px !important; border-radius: var(--lf-r-pill) !important;
 }
+html.lf-paging header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) button:has([data-testid="NavigateBeforeIcon"]) {
+  margin-left: 34px !important;
+}
+/* Écart entre Précédent et Suivant eux-mêmes : collés (0px), sinon les deux ronds se touchent (relevé le 10/11) */
+html.lf-paging header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) button:has([data-testid="NavigateNextIcon"]) {
+  margin-left: 8px !important;
+}
+html.lf-paging header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) button:has([data-testid="NavigateBeforeIcon"]) svg,
+html.lf-paging header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) button:has([data-testid="NavigateNextIcon"]) svg {
+  width: 26px !important; height: 26px !important; font-size: 26px !important;
+}
+/* Fond + couleur seulement si cliquable (pas .Mui-disabled) : une direction sans fond = pas de page de ce côté */
+html.lf-paging header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) button:has([data-testid="NavigateBeforeIcon"]):not(.Mui-disabled),
+html.lf-paging header.MuiAppBar-root .MuiToolbar-root:has(> button .MuiTypography-h2) button:has([data-testid="NavigateNextIcon"]):not(.Mui-disabled) {
+  background: linear-gradient(135deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, .03) 50%), rgba(var(--lf-accent), .22) !important;
+  backdrop-filter: var(--lf-g1-filter) !important; -webkit-backdrop-filter: var(--lf-g1-filter) !important;
+  border: 1px solid rgba(var(--lf-accent), .35) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 4px 14px rgba(0, 0, 0, .35) !important;
+  color: rgb(var(--lf-accent)) !important;
+}
+
+/* Boutons « Page précédente » / « Page suivante » en tête/fin de grille (créés par la fonction 18 de leoflix.js) */
+.lf-nextpage, .lf-prevpage {
+  flex: 1 1 100%; width: 100%; height: 72px; border-radius: var(--lf-r-pill);
+  background: linear-gradient(135deg, rgba(255, 255, 255, .13) 0%, rgba(255, 255, 255, .02) 50%), rgba(var(--lf-accent), .14);
+  backdrop-filter: var(--lf-g2-filter); -webkit-backdrop-filter: var(--lf-g2-filter);
+  border: 1px solid rgba(var(--lf-accent), .3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), var(--lf-g2-shadow);
+  display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; color: #fff;
+  font-weight: 700; letter-spacing: .02em; position: relative; top: 0; transition: top .2s, border-color .2s;
+}
+.lf-nextpage { margin-top: 18px; }
+.lf-prevpage { margin: 18px 0; } /* en haut aussi : sinon ça touche la barre d'outils tout en haut de page */
+@media (hover: hover) { .lf-nextpage:hover, .lf-prevpage:hover { top: -2px; border-color: rgba(var(--lf-accent), .55); } }
+.lf-pagebtn-count { opacity: .65; font-weight: 500; font-size: .9rem; }
+.lf-nextpage svg, .lf-prevpage svg { fill: rgb(var(--lf-accent)); }
